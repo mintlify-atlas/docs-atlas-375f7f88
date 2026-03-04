@@ -1,0 +1,234 @@
+---
+title: Product Details
+description: View comprehensive information about individual products in Tienda ETCA
+---
+
+The product details page provides in-depth information about individual items in the Tienda ETCA catalog. This page explains how to access and interpret product information.
+
+## Accessing Product Details
+
+There are several ways to navigate to a product's detail page:
+
+### From the Product Gallery
+
+1. Browse the product catalog
+2. Find the product you're interested in
+3. Click the **"Ver detalles"** link on the product card
+4. You'll be taken to the dedicated details page for that product
+
+### Direct URL Access
+
+Product details pages use the URL pattern:
+
+```
+/productos/{product-id}
+```
+
+Each product has a unique ID that identifies it in the system.
+
+<Info>
+The product ID is extracted from the URL using React Router's `useParams()` hook and matched against the product catalog.
+</Info>
+
+## Product Details Display
+
+The product details page shows comprehensive information about the selected item:
+
+### Page Title
+
+The page header displays:
+
+```
+Detalle del producto: {product-id}
+```
+
+This confirms which product you're viewing by its unique identifier.
+
+### Product Information
+
+When the product is successfully loaded, you'll see:
+
+1. **Product Name**: The full name of the item (displayed as an `<h3>` heading)
+2. **Product Image**: A larger view of the product photo
+3. **Category**: The product category (e.g., "Arcos", "Flechas", "Accesorios")
+4. **Description**: Detailed description of the product and its features
+
+### Display Structure
+
+```jsx
+// Reference: ~/workspace/source/src/layout/DetallesProductos.jsx:27-38
+<h2 className="titulo-detalle">Detalle del producto: {id}</h2>
+
+{product ? (
+  <>
+    <h3 className="nombre-producto">{product.nombre}</h3>
+    <img className="imagen-producto" src={product.imagen} alt={product.nombre} />
+    <p className="descripcion-producto">Categoria: {product.categoria}</p>
+    <p className="descripcion-producto">Descripcion: {product.descripcion}</p>
+  </>
+) : (
+  <h3>producto no encontrado...</h3>
+)}
+```
+
+## Product Lookup
+
+The details page retrieves product information from the global product catalog:
+
+```jsx
+// Reference: ~/workspace/source/src/layout/DetallesProductos.jsx:10-20
+const { productos } = useContext(CartContext)
+const { id } = useParams()
+const product = productos.find(product => product.id === id)
+```
+
+### How It Works
+
+1. The product ID is extracted from the URL parameters
+2. The application searches the loaded product catalog
+3. It finds the product with matching ID
+4. Product details are displayed
+
+<Note>
+Products are loaded from the same API source used by the product gallery, ensuring consistent information across the application.
+</Note>
+
+## Product Not Found
+
+If you navigate to a product ID that doesn't exist in the catalog:
+
+- The page displays: **"producto no encontrado..."**
+- No product information is shown
+- The back button remains available to return to the previous page
+
+This can happen if:
+- The product has been removed from the catalog
+- The URL was typed incorrectly
+- The product ID is invalid
+
+## Navigation
+
+### Returning to Previous Page
+
+At the bottom of the product details page, there's a **"VOLVER"** (Back) button:
+
+- Click to return to the previous page
+- Uses browser history navigation
+- Typically returns you to the product gallery
+
+```jsx
+// Reference: ~/workspace/source/src/layout/DetallesProductos.jsx:14-16
+const navigate = useNavigate()
+
+const handleBack = () => {
+  navigate(-1)
+};
+```
+
+<Tip>
+You can also use your browser's back button to return to the gallery, which preserves your search filters and pagination state.
+</Tip>
+
+## Product Data Fields
+
+Based on the product structure, each item in the catalog contains:
+
+| Field | Description | Displayed on Details Page |
+|-------|-------------|---------------------------|
+| `id` | Unique product identifier | In page title |
+| `nombre` | Product name | Yes (heading) |
+| `imagen` | Product image URL | Yes (large image) |
+| `categoria` | Product category | Yes |
+| `descripcion` | Detailed description | Yes |
+| `precio` | Product price | No (shown in gallery/cart) |
+| `stock` | Available quantity | No (shown in gallery) |
+
+<Note>
+Price and stock information are shown in the product gallery and cart, but not on the details page. The details page focuses on descriptive information to help you learn more about the product.
+</Note>
+
+## Adding to Cart from Details Page
+
+Currently, the product details page does not include an "Add to Cart" button. To purchase a product:
+
+1. View the product details
+2. Click the **"VOLVER"** button to return to the gallery
+3. Click **"Agregar"** on the product card in the gallery
+
+<Warning>
+You cannot add items to your cart directly from the product details page. Return to the gallery to add items.
+</Warning>
+
+## Use Cases
+
+The product details page is ideal for:
+
+<CardGroup cols={2}>
+  <Card title="Reading Descriptions" icon="file-lines">
+    View the full product description to understand features, specifications, and compatibility.
+  </Card>
+  
+  <Card title="Viewing Larger Images" icon="image">
+    See a larger version of the product photo to better examine the item.
+  </Card>
+  
+  <Card title="Checking Categories" icon="tags">
+    Identify which category the product belongs to for better organization.
+  </Card>
+  
+  <Card title="Product Research" icon="magnifying-glass">
+    Learn detailed information before making a purchase decision.
+  </Card>
+</CardGroup>
+
+## Page Layout
+
+The product details page includes the standard site structure:
+
+- **Header**: Navigation and cart access
+- **Product Details Section**: Main content area with product information
+- **Back Button**: Navigation control
+- **Footer**: Site-wide footer
+
+```jsx
+// Reference: ~/workspace/source/src/layout/DetallesProductos.jsx:23-47
+return (
+  <>
+    <Header/>
+    
+    <h2 className="titulo-detalle">Detalle del producto: {id}</h2>
+    
+    {/* Product information */}
+    
+    <button onClick={handleBack} className="btn-inicio">VOLVER</button>
+    
+    <Footer />
+  </>
+)
+```
+
+## Best Practices
+
+<Steps>
+  <Step title="Access via Gallery">
+    Always access product details through the gallery's "Ver detalles" link rather than manually typing URLs.
+  </Step>
+  
+  <Step title="Read Full Description">
+    Take time to read the complete description to understand what you're purchasing, especially for archery equipment.
+  </Step>
+  
+  <Step title="Note the Category">
+    Pay attention to the product category to ensure it's the type of item you're looking for.
+  </Step>
+  
+  <Step title="Return to Add to Cart">
+    Remember to return to the gallery using the "VOLVER" button to add items to your cart.
+  </Step>
+</Steps>
+
+## Related Features
+
+- [Browsing Products](/user-guide/browsing-products) - Return to the gallery to browse more items
+- [Shopping Cart](/user-guide/shopping-cart) - Add products to your cart from the gallery
+- [Contact](/user-guide/contact) - Ask questions about specific products

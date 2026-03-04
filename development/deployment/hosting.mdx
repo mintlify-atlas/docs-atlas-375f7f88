@@ -1,0 +1,304 @@
+---
+title: 'Hosting & Deployment'
+description: 'Deploy Tienda ETCA to popular hosting platforms with continuous deployment'
+---
+
+## Overview
+
+Tienda ETCA is a single-page application (SPA) built with Vite and React. It can be deployed to any static hosting platform that supports SPAs.
+
+## SPA Routing Configuration
+
+The application includes a `_redirects` file in the `public/` directory to handle client-side routing:
+
+```
+/* /index.html 200
+```
+
+<Note>
+  This redirect rule ensures that all routes are served by `index.html`, allowing React Router to handle navigation client-side.
+</Note>
+
+## Recommended Hosting Platforms
+
+### Netlify
+
+Netlify is ideal for React applications with built-in SPA support.
+
+<Steps>
+  <Step title="Connect Repository">
+    1. Sign up at [netlify.com](https://www.netlify.com)
+    2. Click "Add new site" → "Import an existing project"
+    3. Connect your Git provider (GitHub, GitLab, or Bitbucket)
+    4. Select your Tienda ETCA repository
+  </Step>
+
+  <Step title="Configure Build Settings">
+    Set the following build configuration:
+    
+    - **Build command:** `npm run build`
+    - **Publish directory:** `dist`
+    - **Node version:** 18 or higher (set in `netlify.toml` or site settings)
+  </Step>
+
+  <Step title="Deploy">
+    Click "Deploy site" - Netlify will automatically:
+    - Install dependencies
+    - Run the build command
+    - Deploy the `dist/` directory
+    - Respect the `_redirects` file for SPA routing
+  </Step>
+</Steps>
+
+**Optional: Create `netlify.toml`**
+
+```toml
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "18"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+```
+
+<Note>
+  The `_redirects` file is automatically recognized by Netlify, so the `netlify.toml` redirect is optional.
+</Note>
+
+### Vercel
+
+Vercel offers excellent performance and developer experience for React apps.
+
+<Steps>
+  <Step title="Connect Repository">
+    1. Sign up at [vercel.com](https://vercel.com)
+    2. Click "New Project"
+    3. Import your Git repository
+  </Step>
+
+  <Step title="Configure Project">
+    Vercel auto-detects Vite projects. Verify these settings:
+    
+    - **Framework Preset:** Vite
+    - **Build Command:** `npm run build`
+    - **Output Directory:** `dist`
+    - **Install Command:** `npm install`
+  </Step>
+
+  <Step title="Deploy">
+    Click "Deploy" - Vercel handles everything automatically, including SPA routing.
+  </Step>
+</Steps>
+
+**Optional: Create `vercel.json`**
+
+```json
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "framework": "vite",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
+```
+
+### Cloudflare Pages
+
+Cloudflare Pages provides fast global CDN delivery.
+
+<Steps>
+  <Step title="Connect Repository">
+    1. Go to [Cloudflare Pages](https://pages.cloudflare.com)
+    2. Click "Create a project"
+    3. Connect your Git repository
+  </Step>
+
+  <Step title="Configure Build">
+    Set these build settings:
+    
+    - **Framework preset:** Vite
+    - **Build command:** `npm run build`
+    - **Build output directory:** `dist`
+  </Step>
+
+  <Step title="Deploy">
+    Save and deploy - Cloudflare automatically handles SPA routing.
+  </Step>
+</Steps>
+
+### GitHub Pages
+
+For hosting on GitHub Pages, additional configuration is required.
+
+<Warning>
+  GitHub Pages requires a base path configuration if your repo isn't at the root domain (e.g., `username.github.io/repo-name`).
+</Warning>
+
+**Update `vite.config.js`:**
+
+```javascript
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [react()],
+  base: '/your-repo-name/',  // Add this line
+})
+```
+
+**Deployment with GitHub Actions:**
+
+Create `.github/workflows/deploy.yml`:
+
+```yaml
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          
+      - name: Install dependencies
+        run: npm install
+        
+      - name: Build
+        run: npm run build
+        
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+```
+
+## Environment Variables
+
+All platforms support environment variables for configuration:
+
+### Platform-Specific Setup
+
+**Netlify:** Site settings → Environment variables
+
+**Vercel:** Project settings → Environment Variables
+
+**Cloudflare Pages:** Settings → Environment variables
+
+<Warning>
+  Remember to prefix variables with `VITE_` to make them accessible in your application:
+  
+  ```bash
+  VITE_API_URL=https://api.example.com
+  ```
+</Warning>
+
+## Custom Domains
+
+All platforms support custom domains:
+
+1. Add your domain in the hosting platform's domain settings
+2. Update your DNS records with the provided values
+3. SSL certificates are automatically provisioned
+
+<Note>
+  SSL certificates are automatically generated and renewed by all major hosting platforms.
+</Note>
+
+## Continuous Deployment
+
+All recommended platforms support automatic deployments:
+
+- **Push to main branch** → Production deployment
+- **Push to other branches** → Preview deployments
+- **Pull requests** → Preview URLs for testing
+
+## Performance Optimization
+
+### Recommended Headers
+
+For Netlify, add to `netlify.toml`:
+
+```toml
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+```
+
+### Build Optimization
+
+- Enable build caching (automatic on most platforms)
+- Use platform-specific image optimization
+- Enable compression (gzip/brotli)
+
+## Deployment Checklist
+
+<Steps>
+  <Step title="Pre-Deployment">
+    - [ ] Run `npm run lint` to check for errors
+    - [ ] Test production build locally with `npm run preview`
+    - [ ] Set up environment variables
+    - [ ] Configure custom domain (if needed)
+  </Step>
+
+  <Step title="Deployment">
+    - [ ] Push code to repository
+    - [ ] Monitor build logs for errors
+    - [ ] Verify deployment URL
+    - [ ] Test all routes and functionality
+  </Step>
+
+  <Step title="Post-Deployment">
+    - [ ] Verify SSL certificate
+    - [ ] Check performance metrics
+    - [ ] Set up monitoring and analytics
+    - [ ] Configure automatic deployments
+  </Step>
+</Steps>
+
+## Troubleshooting
+
+### 404 Errors on Routes
+
+If you get 404 errors when navigating to routes:
+
+1. Verify `_redirects` file is in the `public/` directory
+2. Check that the hosting platform recognizes SPA routing
+3. For custom server setups, configure server to serve `index.html` for all routes
+
+### Build Failures
+
+- Check build logs for specific errors
+- Verify Node.js version compatibility (18+)
+- Ensure all dependencies are listed in `package.json`
+- Check for environment variable issues
+
+### Assets Not Loading
+
+- Verify the base path in `vite.config.js` (especially for GitHub Pages)
+- Check browser console for CORS errors
+- Ensure assets are included in the build output
+
+<Note>
+  Most hosting platforms provide detailed build logs and deployment previews to help diagnose issues.
+</Note>

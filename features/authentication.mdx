@@ -1,0 +1,244 @@
+---
+title: 'Authentication'
+description: 'Role-based authentication system with admin and client access levels'
+---
+
+## Overview
+
+Tienda ETCA implements a role-based authentication system that distinguishes between two user types:
+- **Admin**: Full access to product management and administrative features
+- **Cliente**: Standard client access to browse and purchase products
+
+The authentication system uses React Context API for state management and localStorage for session persistence.
+
+## User Roles
+
+The system supports two distinct roles:
+
+<CodeGroup>
+```json User Structure
+{
+  "email": "admin@example.com",
+  "password": "admin123",
+  "role": "admin"
+}
+```
+
+```json Client Example
+{
+  "email": "client@example.com",
+  "password": "cliente123",
+  "role": "cliente"
+}
+```
+</CodeGroup>
+
+## AuthContext Implementation
+
+The authentication logic is centralized in `AuthContext.jsx` located at `~/workspace/source/src/context/AuthContext.jsx:1`.
+
+### State Management
+
+```jsx
+const [email, setEmail] = useState('');
+const [password, setPassword] = useState('');
+const [errors, setErrors] = useState({});
+const [isAuthenticated, setIsAuth] = useState(false);
+const [role, setRole] = useState('');
+```
+
+### Session Persistence
+
+The system checks for existing sessions on mount:
+
+```jsx
+useEffect(() => {
+  const isAuthenticated = localStorage.getItem('isAuth') === 'true'
+  const userRole = localStorage.getItem('role') || '';
+
+  if (isAuthenticated && userRole === 'admin') {
+    setIsAuth(true)
+    setRole(userRole)
+    navigate('/admin')
+  }
+  else if (isAuthenticated && userRole === 'cliente') {
+    setIsAuth(true)
+    setRole(userRole)
+    navigate('/')
+  }
+}, [])
+```
+
+<Note>
+Authentication state persists across page refreshes using localStorage.
+</Note>
+
+## Login Flow
+
+The authentication flow is handled in `~/workspace/source/src/context/AuthContext.jsx:31-71`:
+
+### 1. Form Validation
+
+```jsx
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  let validationErrors = {};
+  if (!email) validationErrors.email = 'Email es requerido';
+  if (!password) validationErrors.password = 'Password es requerido';
+
+  if (Object.keys(validationErrors).length > 0) {
+    setErrors(validationErrors);
+    return;
+  }
+  // ...
+}
+```
+
+### 2. User Authentication
+
+```jsx
+try {
+  const res = await fetch('data/users.json');
+  const users = await res.json();
+
+  const foundUser = users.find(
+    (user) => user.email === email && user.password === password
+  );
+
+  if (!foundUser) {
+    setErrors({ email: 'credenciales invalidas' });
+  } else {
+    setRole(foundUser.role);
+    setIsAuth(true)
+    localStorage.setItem('isAuth', true);
+    localStorage.setItem('role', foundUser.role);
+
+    if (foundUser.role === 'admin') {
+      navigate('/admin');
+    } else {
+      navigate('/');
+    }
+  }
+} catch (err) {
+  console.error('Error fetching users:', err);
+  setErrors({ email: 'Algo salió mal. Por favor, inténtalo de nuevo más tarde.' });
+}
+```
+
+<Warning>
+The current implementation stores credentials in a JSON file. In production, this should be replaced with a secure backend API with proper password hashing.
+</Warning>
+
+## Login Component
+
+The Login UI component is located at `~/workspace/source/src/layout/Login.jsx:1`:
+
+```jsx
+const Login = () => {
+  const { errors, email, setEmail, password, setPassword, handleSubmit } = useAuth();
+
+  return (
+    <div className="container my-5" style={{ maxWidth: '400px' }}>
+      <form onSubmit={handleSubmit} noValidate>
+        <h2 className="text-center mb-4">Iniciar Sesión</h2>
+
+        <div className="mb-3">
+          <label htmlFor="formBasicEmail" className="form-label">
+            Email
+          </label>
+          <input
+            id="formBasicEmail"
+            type="email"
+            placeholder="Ingrese su email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className={`form-control ${errors.email ? 'is-invalid' : ''}`}
+          />
+          {errors.email && <div className="invalid-feedback">{errors.email}</div>}
+        </div>
+
+        <div className="mb-3">
+          <label htmlFor="formBasicPassword" className="form-label">
+            Contraseña
+          </label>
+          <input
+            id="formBasicPassword"
+            type="password"
+            placeholder="Ingrese su contraseña"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className={`form-control ${errors.password ? 'is-invalid' : ''}`}
+          />
+          {errors.password && <div className="invalid-feedback">{errors.password}</div>}
+        </div>
+
+        <button type="submit" className="btn btn-primary w-100">
+          Enviar
+        </button>
+      </form>
+    </div>
+  );
+};
+```
+
+## Using the Auth Hook
+
+Access authentication state anywhere in your app:
+
+```jsx
+import { useAuth } from '../context/AuthContext';
+
+function MyComponent() {
+  const { isAuthenticated, role } = useAuth();
+  
+  return (
+    <div>
+      {isAuthenticated && role === 'admin' && (
+        <AdminPanel />
+      )}
+    </div>
+  );
+}
+```
+
+## Context Provider
+
+The AuthContext provides the following values:
+
+```jsx
+<AuthContext.Provider value={{ 
+  email, 
+  setEmail, 
+  password, 
+  setPassword, 
+  handleSubmit, 
+  errors, 
+  setErrors, 
+  setIsAuth, 
+  isAuthenticated, 
+  role 
+}}>
+  {children}
+</AuthContext.Provider>
+```
+
+<Info>
+Wrap your app with `AuthProvider` to enable authentication throughout the component tree.
+</Info>
+
+## Security Considerations
+
+<Warning>
+**Current Implementation Limitations:**
+- User credentials are stored in a static JSON file
+- Passwords are stored in plain text
+- No token-based authentication
+- No password encryption or hashing
+
+**Production Recommendations:**
+- Implement secure backend authentication API
+- Use JWT tokens for session management
+- Hash passwords with bcrypt or similar
+- Add HTTPS for secure transmission
+- Implement rate limiting and account lockout
+</Warning>

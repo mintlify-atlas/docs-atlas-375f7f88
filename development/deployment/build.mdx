@@ -1,0 +1,141 @@
+---
+title: 'Building for Production'
+description: 'Learn how to build and optimize Tienda ETCA for production deployment'
+---
+
+## Build Process
+
+Tienda ETCA uses Vite for building the production-ready application. The build process optimizes your code for performance and creates static assets ready for deployment.
+
+## Production Build
+
+<Steps>
+  <Step title="Run the Build Command">
+    Execute the build script defined in `package.json`:
+    
+    ```bash
+    npm run build
+    ```
+    
+    This runs `vite build` which:
+    - Bundles all JavaScript and CSS files
+    - Minifies and optimizes code
+    - Processes and optimizes assets
+    - Generates source maps
+    - Creates a production-ready `dist/` directory
+  </Step>
+
+  <Step title="Verify Build Output">
+    After a successful build, check the `dist/` directory:
+    
+    ```bash
+    ls -la dist/
+    ```
+    
+    You should see:
+    - `index.html` - Main HTML entry point
+    - `assets/` - Optimized JavaScript, CSS, and other assets
+    - `vite.svg` - Static assets from the `public/` directory
+    - `_redirects` - Routing configuration for SPAs
+  </Step>
+</Steps>
+
+## Build Output Structure
+
+```
+dist/
+├── index.html
+├── assets/
+│   ├── index-[hash].js
+│   ├── index-[hash].css
+│   └── [other optimized assets]
+├── _redirects
+└── vite.svg
+```
+
+<Note>
+  Vite automatically adds content hashes to filenames (e.g., `index-abc123.js`) to enable efficient browser caching and cache busting.
+</Note>
+
+## Build Optimization
+
+Vite automatically applies several optimizations:
+
+### Code Splitting
+Vite intelligently splits your code into smaller chunks for faster loading:
+- Vendor dependencies are separated from application code
+- Dynamic imports create separate chunks
+- React Router routes can be lazy-loaded
+
+### Tree Shaking
+Unused code is automatically removed from the final bundle, reducing file size.
+
+### Asset Optimization
+- Images and fonts are optimized
+- CSS is minified and purged of unused styles
+- JavaScript is minified using esbuild
+
+## Available Scripts
+
+From `package.json`:
+
+```json
+{
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  }
+}
+```
+
+### Script Descriptions
+
+| Script | Command | Purpose |
+|--------|---------|----------|
+| `dev` | `npm run dev` | Start development server with hot reload |
+| `build` | `npm run build` | Create production build |
+| `lint` | `npm run lint` | Run ESLint to check code quality |
+| `preview` | `npm run preview` | Preview production build locally |
+
+## Build Troubleshooting
+
+<Warning>
+  If the build fails, check for:
+  - ESLint errors (run `npm run lint` to identify issues)
+  - Missing dependencies (run `npm install`)
+  - TypeScript errors if using TypeScript
+  - Insufficient memory (try `NODE_OPTIONS=--max-old-space-size=4096 npm run build`)
+</Warning>
+
+### Common Issues
+
+**Out of Memory Errors**
+```bash
+NODE_OPTIONS=--max-old-space-size=4096 npm run build
+```
+
+**Dependency Issues**
+```bash
+rm -rf node_modules package-lock.json
+npm install
+npm run build
+```
+
+## Build Performance
+
+Typical build times for Tienda ETCA:
+- Initial build: 10-30 seconds
+- Subsequent builds: 5-15 seconds
+
+<Note>
+  Build times depend on your hardware, the number of dependencies, and the size of your application.
+</Note>
+
+## Next Steps
+
+After successfully building your application:
+- Deploy to a [hosting platform](/development/deployment/hosting)
+- Set up continuous deployment with Git integration
+- Configure custom domains and SSL certificates

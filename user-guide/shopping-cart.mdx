@@ -1,0 +1,307 @@
+---
+title: Shopping Cart
+description: Manage your cart, update quantities, and complete your purchase in Tienda ETCA
+---
+
+The shopping cart is your central hub for managing items before completing a purchase. This guide covers adding items, adjusting quantities, removing products, and finalizing your order.
+
+## Accessing the Cart
+
+The shopping cart is accessible from any page in the application through a drawer interface that slides in from the side.
+
+### Opening the Cart
+
+- Click the cart icon in the header (displays the number of items)
+- The cart drawer opens from the side of the screen
+- The cart remains accessible while browsing products
+
+### Closing the Cart
+
+- Click the **✕** close button in the cart header
+- Click outside the cart drawer area
+
+<Note>
+The cart icon in the header shows the total number of unique items (not the total quantity) currently in your cart.
+</Note>
+
+## Cart Interface
+
+The cart drawer displays:
+
+- **Cart Header**: "Carrito de Compras" title with close button
+- **Cart Items**: List of all products added to your cart
+- **Total Price**: Running total of all items
+- **Action Buttons**: Options to empty cart or complete purchase
+
+### Empty Cart State
+
+When your cart is empty, you'll see the message:
+
+```
+El carrito está vacío.
+```
+
+Start adding products from the product gallery to populate your cart.
+
+## Adding Items to Cart
+
+There are multiple ways to add products to your shopping cart:
+
+### From Product Gallery
+
+1. Browse the product catalog
+2. Click the **"Agregar"** button on any product card
+3. The item is added with a quantity of 1
+4. A success toast notification appears: `"[Product Name]" agregado al carrito`
+
+### Adding Duplicate Items
+
+If you add an item that's already in your cart:
+
+- The existing item's quantity increases by 1
+- An info toast appears: `Cantidad aumentada para "[Product Name]"`
+- The item is NOT duplicated in the cart list
+
+<Tip>
+You can also increase quantity directly from within the cart using the + button (see Adjusting Quantities below).
+</Tip>
+
+### Implementation Reference
+
+```jsx
+// Reference: ~/workspace/source/src/context/CartContext.jsx:24-40
+const handleAddToCart = (product) => {
+  const productExist = cart.find((item) => item.id === product.id);
+  
+  if (productExist) {
+    setCart(
+      cart.map((item) =>
+        item.id === product.id
+          ? { ...item, cantidad: item.cantidad + 1 }
+          : item
+      )
+    );
+    toast.info(`Cantidad aumentada para "${product.nombre}"`);
+  } else {
+    setCart([...cart, product]);
+    toast.success(`"${product.nombre}" agregado al carrito`);
+  }
+};
+```
+
+## Managing Cart Items
+
+Each item in your cart displays:
+
+- **Product Name**: The name of the item
+- **Unit Price**: Price per individual item (e.g., $45.99 c/u)
+- **Quantity Controls**: Buttons to increase/decrease quantity
+- **Current Quantity**: Number displayed between - and + buttons
+- **Remove Button**: Trash icon to delete the item entirely
+
+### Cart Item Display
+
+```jsx
+// Reference: ~/workspace/source/src/components/Cart.jsx:88-99
+<li key={item.id}>
+  {item.nombre} - ${item.precio} c/u
+  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+    <button onClick={() => decrease(item)}>-</button>
+    <span>{item.cantidad}</span>
+    <button onClick={() => increase(item)}>+</button>
+    <button onClick={() => eliminarProducto(item)}>
+      <i className="fa-solid fa-trash"></i>
+    </button>
+  </div>
+</li>
+```
+
+## Adjusting Quantities
+
+### Increasing Quantity
+
+1. Click the **+** button next to any item
+2. The quantity increases by 1
+3. The total price updates automatically
+
+```jsx
+// Reference: ~/workspace/source/src/components/Cart.jsx:17-19
+const increase = (item) => {
+  handleAddToCart({ ...item, cantidad: 1 });
+};
+```
+
+### Decreasing Quantity
+
+1. Click the **-** button next to any item
+2. If quantity > 1: The quantity decreases by 1
+3. If quantity = 1: The item remains (use trash icon to remove)
+
+<Warning>
+The decrease button will not remove an item when quantity reaches 1. Use the trash icon to completely remove items from your cart.
+</Warning>
+
+```jsx
+// Reference: ~/workspace/source/src/components/Cart.jsx:21-25
+const decrease = (item) => {
+  if (item.cantidad > 1) {
+    borrarProducto(item);
+  }
+};
+```
+
+## Removing Items
+
+To completely remove an item from your cart:
+
+1. Click the **trash icon** (🗑️) next to the item
+2. The item is immediately removed from the cart
+3. The total price updates automatically
+
+```jsx
+// Reference: ~/workspace/source/src/context/CartContext.jsx:18-20
+const eliminarProducto = (product) => {
+  setCart(prevCart => prevCart.filter(item => item.id !== product.id));
+};
+```
+
+## Cart Total
+
+The cart displays a running total at the bottom:
+
+```
+Total: $XXX.XX
+```
+
+The total is calculated by:
+
+```jsx
+// Reference: ~/workspace/source/src/components/Cart.jsx:27
+const total = cart.reduce((acc, item) => acc + item.precio * item.cantidad, 0);
+```
+
+- Each item's price × quantity is summed
+- Formatted to 2 decimal places
+- Updates in real-time as you modify the cart
+
+## Cart Actions
+
+### Emptying the Cart
+
+1. Click the **"Vaciar Carrito"** button
+2. All items are removed immediately
+3. The cart returns to empty state
+
+<Warning>
+Clearing your cart is immediate and cannot be undone. Make sure you really want to empty your cart before clicking this button.
+</Warning>
+
+```jsx
+// Reference: ~/workspace/source/src/context/CartContext.jsx:60-62
+const vaciarCarrito = () => {
+  setCart([]);
+};
+```
+
+### Completing Your Purchase
+
+1. Review all items in your cart
+2. Verify quantities and total price
+3. Click the **"Finalizar Compra"** button (green)
+4. A confirmation dialog appears with your order summary
+
+#### Purchase Confirmation Dialog
+
+The confirmation shows:
+
+- **Order Summary**: List of all items with quantities and subtotals
+- **Individual Line Items**: `[Product Name] - [Qty] x $[Price] = $[Subtotal]`
+- **Total Price**: Bold display of the final amount
+- **Action Buttons**:
+  - **Aceptar**: Confirm and complete the purchase
+  - **Cancelar**: Return to cart without purchasing
+
+<Info>
+The confirmation dialog is scrollable if you have many items, so you can review your entire order before confirming.
+</Info>
+
+#### After Purchase Confirmation
+
+When you click "Aceptar":
+
+1. Your cart is automatically emptied
+2. A success message appears: "¡La compra se ha realizado con éxito!"
+3. You can continue shopping with a fresh cart
+
+#### Empty Cart Purchase Prevention
+
+If you try to finalize purchase with an empty cart:
+
+- An info alert appears: "No hay productos para comprar."
+- The purchase process does not proceed
+
+```jsx
+// Reference: ~/workspace/source/src/components/Cart.jsx:29-72
+const finalizarCompra = () => {
+  if (cart.length === 0) {
+    Swal.fire('Carrito vacío', 'No hay productos para comprar.', 'info');
+    return;
+  }
+  
+  // Show confirmation with order summary
+  Swal.fire({
+    title: 'Confirma tu compra',
+    html: /* order summary */,
+    showCancelButton: true,
+    confirmButtonText: 'Aceptar',
+    cancelButtonText: 'Cancelar',
+  }).then((result) => {
+    if (result.isConfirmed) {
+      vaciarCarrito();
+      Swal.fire({
+        icon: 'success',
+        title: 'Compra finalizada',
+        text: '¡La compra se ha realizado con éxito!',
+      });
+    }
+  });
+};
+```
+
+## Cart Persistence
+
+Currently, the cart is stored in memory:
+
+- Cart contents are maintained while browsing the site
+- Cart is cleared when you refresh the page
+- Cart is cleared after completing a purchase
+
+<Note>
+The cart data is managed through React Context (CartContext) and is not persisted to localStorage or a database.
+</Note>
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Review Before Checkout" icon="clipboard-check">
+    Always review your cart contents and total before clicking "Finalizar Compra" to ensure everything is correct.
+  </Card>
+  
+  <Card title="Use Quantity Controls" icon="plus-minus">
+    Adjust quantities using the +/- buttons rather than removing and re-adding items.
+  </Card>
+  
+  <Card title="Check Stock" icon="warehouse">
+    Verify product stock levels in the gallery before adding large quantities to your cart.
+  </Card>
+  
+  <Card title="Cart Icon Badge" icon="bell">
+    Keep an eye on the cart icon badge in the header to track how many unique items you've added.
+  </Card>
+</CardGroup>
+
+## Related Features
+
+- [Browsing Products](/user-guide/browsing-products) - Find items to add to your cart
+- [Product Details](/user-guide/product-details) - Learn more about products before purchasing
+- [Contact](/user-guide/contact) - Get help with your order

@@ -1,0 +1,177 @@
+---
+title: Admin Login
+description: How to authenticate as an administrator in Tienda ETCA
+---
+
+The login system authenticates users against a local JSON file and stores session data in localStorage. Different user roles receive different access levels and are redirected to appropriate pages.
+
+## Admin Credentials
+
+The application uses a static user database located at `/workspace/source/public/data/users.json`.
+
+### Available Users
+
+<CodeGroup>
+```json Admin User
+{
+  "email": "admin@example.com",
+  "password": "admin123",
+  "role": "admin"
+}
+```
+
+```json Client User
+{
+  "email": "client@example.com",
+  "password": "cliente123",
+  "role": "cliente"
+}
+```
+</CodeGroup>
+
+<Warning>
+  These are example credentials for development only. In production, implement proper authentication with hashed passwords and secure token management.
+</Warning>
+
+## Authentication Flow
+
+The authentication is handled by `AuthContext` (`/workspace/source/src/context/AuthContext.jsx:31-71`).
+
+### Step 1: Form Submission
+
+When the login form is submitted:
+
+```jsx
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  let validationErrors = {};
+  if (!email) validationErrors.email = 'Email es requerido';
+  if (!password) validationErrors.password = 'Password es requerido';
+
+  if (Object.keys(validationErrors).length > 0) {
+    setErrors(validationErrors);
+    return;
+  }
+  // ... authentication logic
+}
+```
+
+### Step 2: User Validation
+
+The system fetches the users.json file and validates credentials:
+
+```jsx
+const res = await fetch('data/users.json');
+const users = await res.json();
+
+const foundUser = users.find(
+  (user) => user.email === email && user.password === password
+);
+
+if (!foundUser) {
+  setErrors({ email: 'credenciales invalidas' });
+}
+```
+
+Reference: `/workspace/source/src/context/AuthContext.jsx:42-52`
+
+### Step 3: Session Storage
+
+On successful authentication:
+
+```jsx
+setRole(foundUser.role);
+setIsAuth(true);
+localStorage.setItem('isAuth', true);
+localStorage.setItem('role', foundUser.role);
+```
+
+Reference: `/workspace/source/src/context/AuthContext.jsx:54-57`
+
+### Step 4: Role-Based Redirect
+
+Users are redirected based on their role:
+
+<Tabs>
+  <Tab title="Admin Role">
+    ```jsx
+    if (foundUser.role === 'admin') {
+      navigate('/admin');
+    }
+    ```
+    Redirects to the admin panel at `/admin`
+  </Tab>
+  <Tab title="Client Role">
+    ```jsx
+    else {
+      navigate('/');
+    }
+    ```
+    Redirects to the home page
+  </Tab>
+</Tabs>
+
+Reference: `/workspace/source/src/context/AuthContext.jsx:59-65`
+
+## Persistent Sessions
+
+On application load, the system checks for existing sessions:
+
+```jsx
+useEffect(() => {
+  const isAuthenticated = localStorage.getItem('isAuth') === 'true'
+  const userRole = localStorage.getItem('role') || '';
+
+  if (isAuthenticated && userRole === 'admin') {
+    setIsAuth(true)
+    setRole(userRole)
+    navigate('/admin')
+  }
+  else if (isAuthenticated && userRole === 'cliente') {
+    setIsAuth(true)
+    setRole(userRole)
+    navigate('/')
+  }
+}, [])
+```
+
+Reference: `/workspace/source/src/context/AuthContext.jsx:14-28`
+
+This ensures users remain logged in across page refreshes.
+
+## Logout Functionality
+
+Admins can logout from the admin panel:
+
+```jsx
+<button className="navButton" onClick={() => {
+  setIsAuth(false);
+  navigate('/');
+  localStorage.removeItem('isAuth');
+}}>
+  <i className="fa-solid fa-right-from-bracket"></i>
+</button>
+```
+
+Reference: `/workspace/source/src/layout/Admin.jsx:28-34`
+
+<Note>
+  The logout only removes the `isAuth` key from localStorage. Consider also removing the `role` key for complete session cleanup.
+</Note>
+
+## Error Handling
+
+The authentication system handles two types of errors:
+
+1. **Validation errors**: Missing email or password
+2. **Authentication errors**: Invalid credentials
+3. **Network errors**: Failed to fetch users.json
+
+```jsx
+catch (err) {
+  console.error('Error fetching users:', err);
+  setErrors({ email: 'Algo salió mal. Por favor, inténtalo de nuevo más tarde.' });
+}
+```
+
+Reference: `/workspace/source/src/context/AuthContext.jsx:67-70`

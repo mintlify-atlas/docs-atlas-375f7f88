@@ -1,0 +1,261 @@
+---
+title: 'Search & Filter'
+description: 'Real-time product search and filtering functionality'
+---
+
+## Overview
+
+Tienda ETCA implements a real-time search system that filters products as users type. The search is case-insensitive and matches product names instantly without requiring a search button.
+
+## Implementation
+
+The search functionality is implemented in `CartContext` at `~/workspace/source/src/context/CartContext.jsx:13-15`.
+
+### State Management
+
+```jsx
+const [productos, setProductos] = useState([]);
+const [busqueda, setBusqueda] = useState("");
+```
+
+### Filter Logic
+
+Products are filtered using JavaScript's `filter()` and `includes()` methods:
+
+```jsx
+const productosFiltrados = productos.filter((producto) => 
+  producto?.nombre.toLowerCase().includes(busqueda.toLowerCase())
+)
+```
+
+<Info>
+The filter uses optional chaining (`?.`) to safely handle potentially undefined product objects.
+</Info>
+
+## How It Works
+
+<Steps>
+  <Step title="User Types in Search Input">
+    The search input is bound to the `busqueda` state variable.
+  </Step>
+  
+  <Step title="State Updates Trigger Re-render">
+    Every keystroke updates the `busqueda` state, causing the component to re-render.
+  </Step>
+  
+  <Step title="Filter Recalculates">
+    The `productosFiltrados` array is recalculated on each render, filtering products in real-time.
+  </Step>
+  
+  <Step title="Results Display Instantly">
+    The filtered products are immediately displayed to the user.
+  </Step>
+</Steps>
+
+## Search Input Component
+
+The search input is implemented in `ProductList` component at `~/workspace/source/src/components/ProductList.jsx:34-41`:
+
+```jsx
+const ProductList = () => {
+  const { productosFiltrados, busqueda, setBusqueda } = useContext(CartContext);
+
+  return (
+    <>
+      <div className="busqueda-container">
+        <input
+          type='text'
+          placeholder='Buscar productos...'
+          value={busqueda}
+          onChange={(e) => setBusqueda(e.target.value)}
+        />
+      </div>
+      
+      <div className='galeria'>
+        {currentProducts.map(product => (
+          <Product key={product.id} product={product} />
+        ))}
+      </div>
+    </>
+  )
+}
+```
+
+## Case-Insensitive Matching
+
+The search converts both the product name and search query to lowercase for consistent matching:
+
+```jsx
+producto?.nombre.toLowerCase().includes(busqueda.toLowerCase())
+```
+
+<CardGroup cols={2}>
+  <Card title="Search: 'arco'" icon="magnifying-glass">
+    Matches:
+    - "Arco Compuesto"
+    - "ARCO Recurvo"
+    - "Flechas para arco"
+  </Card>
+  
+  <Card title="Search: 'FLECHA'" icon="magnifying-glass">
+    Matches:
+    - "Flecha de Carbono"
+    - "Set de flechas"
+    - "flechas profesionales"
+  </Card>
+</CardGroup>
+
+## Context Provider
+
+The search functionality is exposed through CartContext:
+
+```jsx
+<CartContext.Provider value={{ 
+  productos, 
+  productosFiltrados, 
+  busqueda, 
+  setBusqueda,
+  // ... other values
+}}>
+  {children}
+</CartContext.Provider>
+```
+
+## Usage Example
+
+Access search functionality in any component:
+
+```jsx
+import { useContext } from 'react';
+import { CartContext } from '../context/CartContext';
+
+function SearchBar() {
+  const { busqueda, setBusqueda, productosFiltrados } = useContext(CartContext);
+  
+  return (
+    <div>
+      <input
+        type="text"
+        value={busqueda}
+        onChange={(e) => setBusqueda(e.target.value)}
+        placeholder="Buscar productos..."
+      />
+      <p>Encontrados: {productosFiltrados.length} productos</p>
+    </div>
+  );
+}
+```
+
+## Integration with Pagination
+
+The filtered products work seamlessly with the pagination system. When a search is active, pagination adjusts to show only the filtered results:
+
+```jsx
+const ProductList = () => {
+  const { productosFiltrados, busqueda, setBusqueda } = useContext(CartContext)
+
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 5
+  const indexOfLast = currentPage * itemsPerPage
+  const indexOfFirst = indexOfLast - itemsPerPage
+  const currentProducts = productosFiltrados.slice(indexOfFirst, indexOfLast)
+  const totalPages = Math.ceil(productosFiltrados.length / itemsPerPage)
+  
+  // ...
+}
+```
+
+<Note>
+Pagination automatically recalculates based on `productosFiltrados.length`, ensuring the page count adjusts to search results.
+</Note>
+
+## Product Data Structure
+
+Products are fetched from a MockAPI endpoint and stored in the `productos` state:
+
+```jsx
+useEffect(() => {
+  fetch(
+    "https://681cdce3f74de1d219ae0bdb.mockapi.io/tiendatobe/productos"
+  )
+    .then((respuesta) => respuesta.json())
+    .then((datos) => {
+      setTimeout(() => {
+        setProductos(datos);
+        setCarga(false);
+      }, 2000)
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+      setCarga(false);
+      setError(true);
+    });
+}, []);
+```
+
+## Performance Considerations
+
+<Warning>
+**Current Implementation:**
+The filter runs on every render, recalculating the entire filtered array. For large product catalogs (1000+ items), consider implementing debouncing or memoization.
+</Warning>
+
+### Optimization Suggestions
+
+<CodeGroup>
+```jsx Debounced Search
+import { useState, useEffect } from 'react';
+import { useDebouncedValue } from './hooks/useDebouncedValue';
+
+const [busqueda, setBusqueda] = useState("");
+const debouncedBusqueda = useDebouncedValue(busqueda, 300);
+
+const productosFiltrados = productos.filter((producto) => 
+  producto?.nombre.toLowerCase().includes(debouncedBusqueda.toLowerCase())
+)
+```
+
+```jsx Memoized Filter
+import { useMemo } from 'react';
+
+const productosFiltrados = useMemo(() => {
+  return productos.filter((producto) => 
+    producto?.nombre.toLowerCase().includes(busqueda.toLowerCase())
+  )
+}, [productos, busqueda]);
+```
+</CodeGroup>
+
+## Search Features
+
+<AccordionGroup>
+  <Accordion title="Real-time Filtering">
+    Results update instantly as the user types, with no need to press Enter or click a search button.
+  </Accordion>
+  
+  <Accordion title="Case-Insensitive">
+    Searches match regardless of capitalization, making it user-friendly.
+  </Accordion>
+  
+  <Accordion title="Partial Matching">
+    The search matches any part of the product name, not just the beginning.
+  </Accordion>
+  
+  <Accordion title="Pagination Integration">
+    Search results automatically work with pagination, showing the correct number of pages.
+  </Accordion>
+</AccordionGroup>
+
+## Clear Search
+
+To clear the search and show all products:
+
+```jsx
+function clearSearch() {
+  setBusqueda("");
+}
+```
+
+<Tip>
+Consider adding a clear button (X) inside the search input for better UX when a search term is active.
+</Tip>

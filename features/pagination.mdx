@@ -1,0 +1,348 @@
+---
+title: 'Pagination'
+description: 'Product pagination using React-Bootstrap with smooth scrolling'
+---
+
+## Overview
+
+Tienda ETCA implements pagination for the product gallery using React-Bootstrap's Pagination component. The system displays 5 products per page and includes smooth scrolling to the top of the gallery when changing pages.
+
+## Implementation
+
+Pagination is implemented in the `ProductList` component at `~/workspace/source/src/components/ProductList.jsx:5-70`.
+
+### Import
+
+```jsx
+import Pagination from 'react-bootstrap/Pagination'
+```
+
+### State Management
+
+```jsx
+const [currentPage, setCurrentPage] = useState(1)
+const itemsPerPage = 5
+```
+
+<Info>
+The pagination state tracks the current page number, starting from 1.
+</Info>
+
+## Pagination Logic
+
+The component calculates which products to display based on the current page:
+
+```jsx
+const ProductList = () => {
+  const { productosFiltrados, busqueda, setBusqueda } = useContext(CartContext)
+
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 5
+  const indexOfLast = currentPage * itemsPerPage
+  const indexOfFirst = indexOfLast - itemsPerPage
+  const currentProducts = productosFiltrados.slice(indexOfFirst, indexOfLast)
+  const totalPages = Math.ceil(productosFiltrados.length / itemsPerPage)
+  
+  // ...
+}
+```
+
+### Calculation Breakdown
+
+<Steps>
+  <Step title="Calculate Last Index">
+    ```jsx
+    const indexOfLast = currentPage * itemsPerPage
+    ```
+    For page 1: `1 * 5 = 5`
+  </Step>
+  
+  <Step title="Calculate First Index">
+    ```jsx
+    const indexOfFirst = indexOfLast - itemsPerPage
+    ```
+    For page 1: `5 - 5 = 0`
+  </Step>
+  
+  <Step title="Slice Products Array">
+    ```jsx
+    const currentProducts = productosFiltrados.slice(indexOfFirst, indexOfLast)
+    ```
+    For page 1: `productosFiltrados.slice(0, 5)` returns items 0-4
+  </Step>
+  
+  <Step title="Calculate Total Pages">
+    ```jsx
+    const totalPages = Math.ceil(productosFiltrados.length / itemsPerPage)
+    ```
+    For 23 products: `Math.ceil(23 / 5) = 5` pages
+  </Step>
+</Steps>
+
+## Pagination UI
+
+The pagination component renders at `~/workspace/source/src/components/ProductList.jsx:50-70`:
+
+```jsx
+<div className="paginacion-container">
+  <Pagination className="pagination">
+    <Pagination.Prev
+      onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
+      disabled={currentPage === 1}
+    />
+    {Array.from({ length: totalPages }, (_, i) => (
+      <Pagination.Item
+        key={i + 1}
+        active={i + 1 === currentPage}
+        onClick={() => setCurrentPage(i + 1)}
+      >
+        {i + 1}
+      </Pagination.Item>
+    ))}
+    <Pagination.Next
+      onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
+      disabled={currentPage === totalPages}
+    />
+  </Pagination>
+</div>
+```
+
+### Component Features
+
+<CardGroup cols={3}>
+  <Card title="Previous Button" icon="chevron-left">
+    Decrements page by 1
+    ```jsx
+    Math.max(p - 1, 1)
+    ```
+    Disabled on page 1
+  </Card>
+  
+  <Card title="Page Numbers" icon="list-ol">
+    Dynamically generated based on total pages
+    ```jsx
+    Array.from({ length: totalPages })
+    ```
+    Active page highlighted
+  </Card>
+  
+  <Card title="Next Button" icon="chevron-right">
+    Increments page by 1
+    ```jsx
+    Math.min(p + 1, totalPages)
+    ```
+    Disabled on last page
+  </Card>
+</CardGroup>
+
+## Smooth Scrolling
+
+When users navigate between pages, the gallery automatically scrolls to the top for better UX:
+
+```jsx
+const galeriaRef = useRef(null);
+const isFirstRender = useRef(true);
+
+useEffect(() => {
+  if (isFirstRender.current) {
+    isFirstRender.current = false;
+    return;
+  }
+
+  if (galeriaRef.current) {
+    galeriaRef.current.scrollIntoView({ behavior: 'smooth' });
+  }
+}, [currentPage]);
+```
+
+<Note>
+The `isFirstRender` check prevents scrolling on initial page load, only scrolling when users actively change pages.
+</Note>
+
+### Scroll Target
+
+The gallery container is marked with a ref:
+
+```jsx
+<div className='galeria' ref={galeriaRef}>
+  {currentProducts.map(product => (
+    <Product key={product.id} product={product} />
+  ))}
+</div>
+```
+
+## Integration with Search
+
+Pagination automatically adapts to search results. When users search for products, the pagination recalculates based on filtered results:
+
+```jsx
+const { productosFiltrados } = useContext(CartContext)
+
+const currentProducts = productosFiltrados.slice(indexOfFirst, indexOfLast)
+const totalPages = Math.ceil(productosFiltrados.length / itemsPerPage)
+```
+
+<Tabs>
+  <Tab title="All Products (23)">
+    ```jsx
+    totalPages = Math.ceil(23 / 5) = 5 pages
+    ```
+    Shows: Page 1, 2, 3, 4, 5
+  </Tab>
+  
+  <Tab title="Search Results (8)">
+    ```jsx
+    totalPages = Math.ceil(8 / 5) = 2 pages
+    ```
+    Shows: Page 1, 2
+  </Tab>
+  
+  <Tab title="Search Results (3)">
+    ```jsx
+    totalPages = Math.ceil(3 / 5) = 1 page
+    ```
+    Shows: Page 1 (pagination may be hidden)
+  </Tab>
+</Tabs>
+
+## Full Component Code
+
+Complete implementation from `~/workspace/source/src/components/ProductList.jsx:7-72`:
+
+```jsx
+const ProductList = () => {
+  const { productosFiltrados, busqueda, setBusqueda } = useContext(CartContext)
+
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 5
+  const indexOfLast = currentPage * itemsPerPage
+  const indexOfFirst = indexOfLast - itemsPerPage
+  const currentProducts = productosFiltrados.slice(indexOfFirst, indexOfLast)
+  const totalPages = Math.ceil(productosFiltrados.length / itemsPerPage)
+
+  const galeriaRef = useRef(null);
+  const isFirstRender = useRef(true);
+
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+
+    if (galeriaRef.current) {
+      galeriaRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [currentPage]);
+
+  return (
+    <>
+      <div className="busqueda-container">
+        <input
+          type='text'
+          placeholder='Buscar productos...'
+          value={busqueda}
+          onChange={(e) => setBusqueda(e.target.value)}
+        />
+      </div>
+
+      <div className='galeria' ref={galeriaRef}>
+        {currentProducts.map(product => (
+          <Product key={product.id} product={product} />
+        ))}
+      </div>
+
+      <div className="paginacion-container">
+        <Pagination className="pagination">
+          <Pagination.Prev
+            onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
+            disabled={currentPage === 1}
+          />
+          {Array.from({ length: totalPages }, (_, i) => (
+            <Pagination.Item
+              key={i + 1}
+              active={i + 1 === currentPage}
+              onClick={() => setCurrentPage(i + 1)}
+            >
+              {i + 1}
+            </Pagination.Item>
+          ))}
+          <Pagination.Next
+            onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
+            disabled={currentPage === totalPages}
+          />
+        </Pagination>
+      </div>
+    </>
+  )
+}
+```
+
+## Customization Options
+
+### Change Items Per Page
+
+```jsx
+const itemsPerPage = 10; // Show 10 products per page
+```
+
+### Reset to First Page on Search
+
+```jsx
+useEffect(() => {
+  setCurrentPage(1);
+}, [busqueda]);
+```
+
+### Custom Page Button Styling
+
+```jsx
+<Pagination.Item
+  key={i + 1}
+  active={i + 1 === currentPage}
+  onClick={() => setCurrentPage(i + 1)}
+  className="custom-page-item"
+>
+  {i + 1}
+</Pagination.Item>
+```
+
+## Best Practices
+
+<AccordionGroup>
+  <Accordion title="Prevent Out-of-Bounds Navigation">
+    Use `Math.max()` and `Math.min()` to ensure page numbers stay within valid range:
+    ```jsx
+    Math.max(p - 1, 1) // Never go below page 1
+    Math.min(p + 1, totalPages) // Never exceed last page
+    ```
+  </Accordion>
+  
+  <Accordion title="Disable Navigation at Boundaries">
+    Disable Previous button on first page and Next button on last page for better UX:
+    ```jsx
+    disabled={currentPage === 1}
+    disabled={currentPage === totalPages}
+    ```
+  </Accordion>
+  
+  <Accordion title="Smooth Scroll Enhancement">
+    Skip scrolling on initial render to prevent jarring page load:
+    ```jsx
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    ```
+  </Accordion>
+  
+  <Accordion title="Dynamic Page Calculation">
+    Always calculate total pages based on filtered results for search compatibility:
+    ```jsx
+    Math.ceil(productosFiltrados.length / itemsPerPage)
+    ```
+  </Accordion>
+</AccordionGroup>
+
+<Tip>
+For large product catalogs with many pages, consider implementing page number ellipsis (e.g., "1 ... 5 6 7 ... 20") to keep the pagination UI clean.
+</Tip>

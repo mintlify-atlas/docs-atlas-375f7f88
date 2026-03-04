@@ -1,80 +1,193 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: Quickstart
+description: Get Tienda ETCA up and running in minutes
 ---
 
-## Get started in three steps
+<Steps>
+  <Step title="Clone the repository">
+    Clone the Tienda ETCA repository to your local machine:
 
-Get your documentation site running locally and make your first customization.
+    ```bash
+    git clone <your-repository-url>
+    cd tienda-etca
+    ```
+  </Step>
 
-### Step 1: Set up your local environment
+  <Step title="Install dependencies">
+    Install all required dependencies using npm:
 
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
-    
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
-    
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
+    ```bash
+    npm install
+    ```
 
-### Step 2: Deploy your changes
+    <Note>
+      This will install React 19, Vite 6, React Router DOM, Bootstrap, and other essential packages for the e-commerce platform.
+    </Note>
+  </Step>
 
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
-    
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
+  <Step title="Start the development server">
+    Run the Vite development server:
 
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
+    ```bash
+    npm run dev
+    ```
 
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
+    The application will be available at `http://localhost:5173`
 
-### Step 3: Go live
+    <Info>
+      Vite provides hot module replacement (HMR) for instant updates during development.
+    </Info>
+  </Step>
 
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
+  <Step title="Explore the application">
+    Open your browser and navigate to the local server. You should see the ETCA archery school e-commerce platform with:
+
+    - Product gallery with pagination
+    - Shopping cart functionality
+    - Product search and filtering
+    - Admin panel (requires login)
+  </Step>
+</Steps>
+
+## Available scripts
+
+The application includes the following npm scripts:
+
+<CodeGroup>
+```bash Development
+npm run dev
+```
+
+```bash Build
+npm run build
+```
+
+```bash Preview
+npm run preview
+```
+
+```bash Lint
+npm run lint
+```
+</CodeGroup>
+
+### Script descriptions
+
+- **dev**: Starts the Vite development server with hot reload
+- **build**: Creates an optimized production build in the `dist` folder
+- **preview**: Previews the production build locally
+- **lint**: Runs ESLint to check code quality
+
+## Quick code examples
+
+### Adding a product to cart
+
+The application uses React Context API for global state management. Here's how products are added to the cart:
+
+```jsx src/context/CartContext.jsx
+const handleAddToCart = (product) => {
+    const productExist = cart.find((item) => item.id === product.id);
+
+    if (productExist) {
+        setCart(
+            cart.map((item) =>
+                item.id === product.id
+                    ? { ...item, cantidad: item.cantidad + 1 }
+                    : item
+            )
+        );
+        toast.info(`Cantidad aumentada para "${product.nombre}"`);
+    } else {
+        setCart([...cart, product]);
+        toast.success(`"${product.nombre}" agregado al carrito`);
+    }
+};
+```
+
+### Fetching products from API
+
+Products are fetched from MockAPI on component mount:
+
+```jsx src/context/CartContext.jsx
+useEffect(() => {
+    fetch(
+        "https://681cdce3f74de1d219ae0bdb.mockapi.io/tiendatobe/productos"
+    )
+        .then((respuesta) => respuesta.json())
+        .then((datos) => {
+            setTimeout(() => {
+                setProductos(datos);
+                setCarga(false);
+            }, 2000)
+        })
+        .catch((error) => {
+            console.error("Error:", error);
+            setCarga(false);
+            setError(true);
+        });
+}, []);
+```
+
+### Application routing
+
+The app uses React Router DOM for client-side routing:
+
+```jsx src/App.jsx
+<Routes>
+  <Route path="/" element={<Home/>}/>
+  <Route path="/productos" element={<GaleriaProductos/>}/>
+  <Route path="/productos/:id" element={<DetallesProductos/>}/>
+  <Route path="/acercade" element={<AcercaDe />}/>
+  <Route path="/contacto" element={<Contacto />}/>
+  <Route path='/admin' element={
+    <RutaProtegida isAuthenticated={isAuthenticated} requeridRole='admin' role={role}>
+      <Admin />
+    </RutaProtegida>
+  }/>
+  <Route path='/login' element={<Login />}/>
+  <Route path="*" element={<NotFound />}/>
+</Routes>
+```
+
+## Testing the application
+
+### Test the product gallery
+
+1. Navigate to `/productos` to see the full product gallery
+2. Use the search bar to filter products by name
+3. Test pagination controls to navigate through product pages
+
+### Test the shopping cart
+
+1. Click "Agregar al carrito" on any product
+2. You should see a toast notification confirming the addition
+3. Open the cart to view added products
+4. Test quantity increase/decrease and product removal
+
+### Test admin functionality
+
+<Warning>
+  The admin panel is protected by authentication. You'll need valid credentials to access it.
+</Warning>
+
+1. Navigate to `/login`
+2. Enter admin credentials
+3. Access `/admin` to manage products
+4. Test adding, editing, and deleting products
 
 ## Next steps
 
-Now that you have your docs running, explore these key features:
-
 <CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
+  <Card title="Installation" icon="download" href="/installation">
+    Learn about detailed installation requirements and environment setup
+  </Card>
+  <Card title="Project structure" icon="folder-tree" href="/development/project-structure">
+    Understand the codebase organization and architecture
+  </Card>
+  <Card title="Context API" icon="code" href="/development/context/cart-context">
+    Explore the context providers for cart, auth, and admin
+  </Card>
+  <Card title="Deployment" icon="rocket" href="/development/deployment/setup">
+    Deploy your application to production
+  </Card>
 </CardGroup>
-
-<Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
-</Note>

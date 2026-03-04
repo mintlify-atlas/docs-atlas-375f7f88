@@ -1,0 +1,281 @@
+---
+title: Contact Form
+description: Get in touch with Tienda ETCA using the contact form for inquiries and support
+---
+
+The contact form allows you to reach out to Tienda ETCA with questions, feedback, or support requests. This page explains how to use the contact form effectively.
+
+## Accessing the Contact Form
+
+The contact page is available through the main navigation:
+
+1. Navigate to the Contact section from the site menu
+2. The contact page loads with a centered form
+3. The cart remains accessible from this page
+
+### Page Layout
+
+The contact page features:
+
+- **Header**: Standard site navigation and cart icon
+- **Page Title**: "Contacto" heading centered at the top
+- **Introduction Text**: Brief message encouraging you to get in touch
+- **Contact Form**: Centered form with input fields
+- **Footer**: Standard site footer
+
+```jsx
+// Reference: ~/workspace/source/src/layout/Contacto.jsx:14-27
+<div className="container py-5" style={{ backgroundColor: '#ffffff', minHeight: '70vh' }}>
+  <h2 className="text-center mb-4">Contacto</h2>
+  <p className="text-center mb-5">
+    Si tienes alguna consulta, no dudes en escribirnos a través del siguiente formulario.
+  </p>
+  
+  <div className="row justify-content-center">
+    <div className="col-md-8">
+      <Formulario />
+    </div>
+  </div>
+</div>
+```
+
+## Form Fields
+
+The contact form includes three required fields:
+
+### 1. Name (Nombre)
+
+- **Field Type**: Text input
+- **Placeholder**: "Nombre"
+- **Required**: Yes
+- **Purpose**: Identify who is sending the message
+
+### 2. Email (Correo)
+
+- **Field Type**: Email input
+- **Placeholder**: "Correo"
+- **Required**: Yes
+- **Validation**: Must be a valid email format
+- **Purpose**: Allow Tienda ETCA to respond to your inquiry
+
+### 3. Message (Mensaje)
+
+- **Field Type**: Text input
+- **Placeholder**: "Mensaje"
+- **Required**: Yes
+- **Purpose**: Your question, comment, or inquiry
+
+<Note>
+All three fields are required. You cannot submit the form with any empty fields.
+</Note>
+
+### Form Structure
+
+```jsx
+// Reference: ~/workspace/source/src/components/Formulario.jsx:14-53
+<form className="container my-4" onSubmit={manejarEnvio}>
+  <div className="row g-3">
+    <div className="col-md-4">
+      <input
+        type="text"
+        className="form-control"
+        value={nombre}
+        onChange={(e) => setNombre(e.target.value)}
+        placeholder="Nombre"
+        required
+      />
+    </div>
+    <div className="col-md-4">
+      <input
+        type="email"
+        className="form-control"
+        value={mail}
+        onChange={(e) => setMail(e.target.value)}
+        placeholder="Correo"
+        required
+      />
+    </div>
+    <div className="col-md-4">
+      <input
+        type="text"
+        className="form-control"
+        value={mensaje}
+        onChange={(e) => setMensaje(e.target.value)}
+        placeholder="Mensaje"
+        required
+      />
+    </div>
+    <div className="col-12 text-end">
+      <button type="submit" className="btn btn-primary">
+        Enviar
+      </button>
+    </div>
+  </div>
+</form>
+```
+
+## Submitting the Form
+
+### How to Submit
+
+1. Fill in all three required fields:
+   - Enter your full name
+   - Provide a valid email address
+   - Type your message or inquiry
+2. Click the **"Enviar"** (Send) button
+3. The form is validated before submission
+
+### Form Validation
+
+The form uses HTML5 validation:
+
+- **Empty Fields**: Cannot submit with any empty required fields
+- **Email Format**: The email field must contain a valid email address (e.g., user@example.com)
+- **Browser Validation**: Your browser will display validation messages if fields are invalid
+
+<Tip>
+Make sure to provide a valid email address so that Tienda ETCA can respond to your inquiry.
+</Tip>
+
+## After Submission
+
+When you successfully submit the form:
+
+1. A browser alert appears with the message:
+   ```
+   Formulario enviado por: [Your Name]
+   ```
+2. This confirms your form was processed
+3. Click "OK" to dismiss the alert
+
+```jsx
+// Reference: ~/workspace/source/src/components/Formulario.jsx:9-12
+function manejarEnvio(evento) {
+  evento.preventDefault();
+  alert(`Formulario enviado por: ${nombre}`);
+}
+```
+
+<Note>
+Currently, the form displays a confirmation alert but does not send the data to a backend server. This is a demonstration form showing the frontend implementation.
+</Note>
+
+## Form State Management
+
+The contact form uses React state to manage input values:
+
+```jsx
+// Reference: ~/workspace/source/src/components/Formulario.jsx:5-7
+const [nombre, setNombre] = useState('');
+const [mensaje, setMensaje] = useState('');
+const [mail, setMail] = useState('');
+```
+
+- Each field's value is controlled by React state
+- As you type, the state updates in real-time
+- Form data is available for submission when you click "Enviar"
+
+## Use Cases
+
+The contact form is ideal for:
+
+<CardGroup cols={2}>
+  <Card title="Product Inquiries" icon="circle-question">
+    Ask questions about specific products, availability, or specifications for archery equipment.
+  </Card>
+  
+  <Card title="Order Support" icon="headset">
+    Request help with orders, shipping, or purchase-related questions.
+  </Card>
+  
+  <Card title="Technical Issues" icon="triangle-exclamation">
+    Report problems with the website, cart, or browsing experience.
+  </Card>
+  
+  <Card title="General Feedback" icon="comment">
+    Share suggestions, feedback, or comments about Tienda ETCA.
+  </Card>
+</CardGroup>
+
+## Best Practices
+
+<Steps>
+  <Step title="Be Specific">
+    Provide detailed information in your message. If asking about a product, include the product name or ID.
+  </Step>
+  
+  <Step title="Valid Email">
+    Double-check your email address before submitting to ensure you receive a response.
+  </Step>
+  
+  <Step title="Clear Subject">
+    Start your message with a clear subject or summary of your inquiry.
+  </Step>
+  
+  <Step title="Include Context">
+    If reporting an issue, describe what you were trying to do when the problem occurred.
+  </Step>
+</Steps>
+
+## Tips for Effective Contact Messages
+
+<Accordion>
+  <AccordionItem title="Product Questions">
+    When asking about a product:
+    - Include the product name or ID
+    - Specify what information you need (price, availability, compatibility)
+    - Mention any specific requirements or concerns
+    
+    Example: "I'm interested in the Arco Compuesto Pro. Is this suitable for beginners? What arrows are compatible?"
+  </AccordionItem>
+  
+  <AccordionItem title="Technical Issues">
+    When reporting a problem:
+    - Describe what you were doing
+    - Explain what happened vs. what you expected
+    - Mention your browser and device if relevant
+    
+    Example: "I tried adding a product to my cart, but it didn't appear. I'm using Chrome on Windows."
+  </AccordionItem>
+  
+  <AccordionItem title="Order Inquiries">
+    When asking about an order:
+    - Reference specific products if applicable
+    - Include any relevant dates or transaction details
+    - Clearly state your question
+    
+    Example: "I purchased 3 items yesterday. Can you confirm the expected delivery date?"
+  </AccordionItem>
+</Accordion>
+
+## Cart Access
+
+While on the contact page, your shopping cart remains accessible:
+
+- Click the cart icon in the header to view your cart
+- The cart drawer slides in from the side
+- You can manage cart items without leaving the contact page
+
+```jsx
+// Reference: ~/workspace/source/src/layout/Contacto.jsx:30
+<Cart isOpen={isCartOpen} onClose={() => setCartOpen(false)} />
+```
+
+<Info>
+You can browse products and contact Tienda ETCA without losing your cart contents.
+</Info>
+
+## Form Styling
+
+The contact form uses Bootstrap styling for a clean, responsive layout:
+
+- **Bootstrap Grid**: Responsive column layout
+- **Form Controls**: Styled input fields with consistent appearance
+- **Button Styling**: Primary button style for the submit action
+- **Spacing**: Proper padding and margins for readability
+
+## Related Features
+
+- [Browsing Products](/user-guide/browsing-products) - Browse the catalog before asking product questions
+- [Product Details](/user-guide/product-details) - View detailed info before contacting support
+- [Shopping Cart](/user-guide/shopping-cart) - Manage your cart while seeking assistance

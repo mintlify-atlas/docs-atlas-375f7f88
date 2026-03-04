@@ -1,0 +1,549 @@
+---
+title: 'AdminContext'
+description: 'Product management and CRUD operations for administrators in Tienda ETCA'
+---
+
+## Overview
+
+The `AdminContext` provides product management functionality for administrators. It handles creating, reading, updating, and deleting products through a REST API, with built-in loading states and user-friendly confirmation dialogs.
+
+**Source:** `~/workspace/source/src/context/AdminContext.jsx`
+
+## Setup
+
+Wrap admin routes with the `AdminProvider`:
+
+```jsx
+import { AdminProvider } from './context/AdminContext';
+
+function App() {
+  return (
+    <AdminProvider>
+      {/* Admin components */}
+    </AdminProvider>
+  );
+}
+```
+
+## Usage
+
+Access the admin context in any component:
+
+```jsx
+import { useContext } from 'react';
+import { AdminContext } from '../context/AdminContext';
+
+function AdminPanel() {
+  const { productos, agregarProducto, eliminarProducto } = useContext(AdminContext);
+  
+  // Use admin methods and state
+}
+```
+
+## State Properties
+
+### productos
+
+<ParamField path="productos" type="array">
+  Complete product catalog fetched from the API. Automatically loaded on mount and refreshed after CRUD operations.
+</ParamField>
+
+```jsx
+// Example product structure
+{
+  id: "1",
+  nombre: "Arco Recurvo",
+  precio: 250,
+  descripcion: "Arco profesional para competición",
+  imagen: "url-to-image",
+  stock: 10
+}
+```
+
+### loading
+
+<ParamField path="loading" type="boolean">
+  Loading state while fetching products. Initially `true`, becomes `false` after 2-second delay.
+</ParamField>
+
+### open
+
+<ParamField path="open" type="boolean">
+  Controls visibility of the "Add Product" modal.
+</ParamField>
+
+### setOpen
+
+<ParamField path="setOpen" type="function">
+  Toggle the "Add Product" modal visibility.
+</ParamField>
+
+```jsx
+const { open, setOpen } = useContext(AdminContext);
+
+// Open modal
+setOpen(true);
+
+// Close modal
+setOpen(false);
+```
+
+### openEditor
+
+<ParamField path="openEditor" type="boolean">
+  Controls visibility of the "Edit Product" modal.
+</ParamField>
+
+### setOpenEditor
+
+<ParamField path="setOpenEditor" type="function">
+  Toggle the "Edit Product" modal visibility.
+</ParamField>
+
+### seleccionado
+
+<ParamField path="seleccionado" type="object | null">
+  Currently selected product for editing. `null` when no product is selected.
+</ParamField>
+
+### setSeleccionado
+
+<ParamField path="setSeleccionado" type="function">
+  Set the product to be edited.
+</ParamField>
+
+```jsx
+const { setSeleccionado, setOpenEditor } = useContext(AdminContext);
+
+const handleEdit = (product) => {
+  setSeleccionado(product);
+  setOpenEditor(true);
+};
+```
+
+## Methods
+
+### agregarProducto
+
+Creates a new product in the database via POST request.
+
+<ParamField path="producto" type="object" required>
+  Product object with the following properties:
+</ParamField>
+
+**Product Object Properties:**
+- `nombre` (string, required) - Product name
+- `precio` (number, required) - Product price
+- `descripcion` (string, required) - Product description
+- `imagen` (string, optional) - Image URL
+- `stock` (number, optional) - Available stock
+
+**Returns:** `Promise<void>`
+
+**Behavior:**
+1. Sends POST request to API
+2. Shows success alert with SweetAlert2
+3. Automatically reloads product list
+4. Handles errors with console logging
+
+**Example:**
+
+```jsx src/layout/Admin.jsx
+import { useContext } from 'react';
+import { AdminContext } from '../context/AdminContext';
+import FormularioProducto from '../components/FormularioProducto';
+
+function Admin() {
+  const { open, setOpen, agregarProducto } = useContext(AdminContext);
+
+  return (
+    <div>
+      <button onClick={() => setOpen(true)}>Agregar Producto</button>
+      
+      {open && (
+        <FormularioProducto 
+          onAgregar={agregarProducto} 
+          onClose={() => setOpen(false)} 
+        />
+      )}
+    </div>
+  );
+}
+```
+
+**Form Component Example:**
+
+```jsx src/components/FormularioProducto.jsx
+import React, { useState } from 'react';
+
+function FormularioProducto({ onAgregar, onClose }) {
+  const [producto, setProducto] = useState({
+    nombre: '',
+    precio: '',
+    descripcion: '',
+  });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onAgregar(producto);  // Calls agregarProducto
+    setProducto({ nombre: '', precio: '', descripcion: '' });
+    onClose();
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input
+        type="text"
+        name="nombre"
+        value={producto.nombre}
+        onChange={(e) => setProducto({ ...producto, nombre: e.target.value })}
+        placeholder="Nombre del producto"
+      />
+      
+      <input
+        type="number"
+        name="precio"
+        value={producto.precio}
+        onChange={(e) => setProducto({ ...producto, precio: e.target.value })}
+        placeholder="Precio"
+      />
+      
+      <textarea
+        name="descripcion"
+        value={producto.descripcion}
+        onChange={(e) => setProducto({ ...producto, descripcion: e.target.value })}
+        placeholder="Descripción"
+      />
+      
+      <button type="submit">Agregar Producto</button>
+    </form>
+  );
+}
+```
+
+### actualizarProducto
+
+Updates an existing product via PUT request.
+
+<ParamField path="producto" type="object" required>
+  Complete product object including `id` and all updated fields.
+</ParamField>
+
+**Required Properties:**
+- `id` (string, required) - Product ID to update
+- All other product fields to update
+
+**Returns:** `Promise<void>`
+
+**Behavior:**
+1. Sends PUT request to API endpoint `/productos/{id}`
+2. Shows success alert with SweetAlert2
+3. Closes editor modal
+4. Clears selected product
+5. Reloads product list
+
+**Example:**
+
+```jsx src/layout/Admin.jsx
+import { useContext } from 'react';
+import { AdminContext } from '../context/AdminContext';
+import FormularioEdicion from '../components/FormularioEdicion';
+
+function Admin() {
+  const { 
+    productos, 
+    openEditor, 
+    setOpenEditor, 
+    seleccionado, 
+    setSeleccionado,
+    actualizarProducto 
+  } = useContext(AdminContext);
+
+  const handleEdit = (product) => {
+    setSeleccionado(product);
+    setOpenEditor(true);
+  };
+
+  return (
+    <div>
+      <table>
+        <tbody>
+          {productos.map((product) => (
+            <tr key={product.id}>
+              <td>{product.nombre}</td>
+              <td>${product.precio}</td>
+              <td>
+                <button onClick={() => handleEdit(product)}>
+                  Editar
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      {openEditor && (
+        <FormularioEdicion
+          productoSeleccionado={seleccionado}
+          onActualizar={actualizarProducto}
+          onClose={() => setOpenEditor(false)}
+        />
+      )}
+    </div>
+  );
+}
+```
+
+### eliminarProducto
+
+Deletes a product after user confirmation via DELETE request.
+
+<ParamField path="id" type="string" required>
+  Product ID to delete.
+</ParamField>
+
+**Returns:** `Promise<void>`
+
+**Behavior:**
+1. Shows confirmation dialog with SweetAlert2
+2. If confirmed:
+   - Sends DELETE request to API
+   - Shows success message
+   - Reloads product list
+3. If cancelled: no action taken
+4. On error: shows error alert
+
+**Example:**
+
+```jsx src/layout/Admin.jsx
+import { useContext } from 'react';
+import { AdminContext } from '../context/AdminContext';
+
+function Admin() {
+  const { productos, eliminarProducto } = useContext(AdminContext);
+
+  return (
+    <table>
+      <thead>
+        <tr>
+          <th>Producto</th>
+          <th>Precio</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {productos.map((product) => (
+          <tr key={product.id}>
+            <td>{product.nombre}</td>
+            <td>${product.precio}</td>
+            <td>
+              <button 
+                className="deleteButton" 
+                onClick={() => eliminarProducto(product.id)}
+              >
+                Eliminar
+              </button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+```
+
+**Confirmation Dialog:**
+
+The delete method automatically shows this confirmation:
+
+```
+Title: "¿Estás seguro de eliminar el producto?"
+Icon: warning
+Buttons: "Sí, eliminar" | "Cancelar"
+```
+
+## Internal Methods
+
+### cargarProductos
+
+Internal method that fetches products from the API. Called automatically after CRUD operations.
+
+**Not exposed in context value** - used internally only.
+
+```jsx
+const cargarProductos = async () => {
+  try {
+    const res = await fetch(apiUrl)
+    const data = await res.json()
+    setProductos(data)
+  } catch (error) {
+    console.log('Error al cargar productos ', error)
+  }
+}
+```
+
+## API Endpoint
+
+All operations use the MockAPI endpoint:
+
+```
+https://681cdce3f74de1d219ae0bdb.mockapi.io/tiendatobe/productos
+```
+
+**API Operations:**
+- `GET /productos` - Fetch all products
+- `POST /productos` - Create new product
+- `PUT /productos/{id}` - Update product
+- `DELETE /productos/{id}` - Delete product
+
+## Complete Admin Panel Example
+
+```jsx src/layout/Admin.jsx
+import { useContext } from 'react';
+import { AdminContext } from '../context/AdminContext';
+import { useAuth } from '../context/AuthContext';
+import FormularioProducto from '../components/FormularioProducto';
+import FormularioEdicion from '../components/FormularioEdicion';
+
+function Admin() {
+  const { setIsAuth } = useAuth();
+  const { 
+    productos, 
+    loading, 
+    open, 
+    setOpen, 
+    openEditor, 
+    setOpenEditor, 
+    seleccionado, 
+    setSeleccionado, 
+    agregarProducto, 
+    actualizarProducto, 
+    eliminarProducto 
+  } = useContext(AdminContext);
+
+  const handleLogout = () => {
+    localStorage.clear();
+    setIsAuth(false);
+  };
+
+  const handleEdit = (product) => {
+    setSeleccionado(product);
+    setOpenEditor(true);
+  };
+
+  if (loading) {
+    return <div>Cargando productos...</div>;
+  }
+
+  return (
+    <div className="admin-panel">
+      <header>
+        <h1>Panel de Administración</h1>
+        <button onClick={handleLogout}>Cerrar Sesión</button>
+      </header>
+
+      <div className="actions">
+        <button onClick={() => setOpen(true)}>Agregar Producto</button>
+      </div>
+
+      <table className="products-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Precio</th>
+            <th>Stock</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {productos.map((product) => (
+            <tr key={product.id}>
+              <td>{product.id}</td>
+              <td>{product.nombre}</td>
+              <td>${product.precio}</td>
+              <td>{product.stock}</td>
+              <td>
+                <button onClick={() => handleEdit(product)}>
+                  Editar
+                </button>
+                <button 
+                  className="deleteButton" 
+                  onClick={() => eliminarProducto(product.id)}
+                >
+                  Eliminar
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      {/* Modals */}
+      {open && (
+        <FormularioProducto 
+          onAgregar={agregarProducto} 
+          onClose={() => setOpen(false)} 
+        />
+      )}
+      
+      {openEditor && (
+        <FormularioEdicion
+          productoSeleccionado={seleccionado}
+          onActualizar={actualizarProducto}
+          onClose={() => setOpenEditor(false)}
+        />
+      )}
+    </div>
+  );
+}
+
+export default Admin;
+```
+
+## User Feedback
+
+All CRUD operations provide user feedback via SweetAlert2:
+
+**Add Product Success:**
+```
+Title: "Realizado!"
+Text: "Producto agregado correctamente!"
+Icon: success
+```
+
+**Update Product Success:**
+```
+Title: "Realizado!"
+Text: "Producto actualizado correctamente!"
+Icon: success
+```
+
+**Delete Confirmation:**
+```
+Title: "¿Estás seguro de eliminar el producto?"
+Icon: warning
+Buttons: Confirm | Cancel
+```
+
+**Delete Success:**
+```
+Title: "Realizado!"
+Text: "Producto eliminado correctamente!"
+Icon: success
+```
+
+**Delete Error:**
+```
+Title: "Error!"
+Text: "Hubo un problema al eliminar el producto!"
+Icon: error
+```
+
+## Error Handling
+
+All methods include try-catch blocks:
+- Network errors are logged to console
+- User-facing errors show SweetAlert2 dialogs
+- Failed operations don't reload the product list
+- The UI remains stable even when operations fail

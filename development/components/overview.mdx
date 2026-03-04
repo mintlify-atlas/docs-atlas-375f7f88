@@ -1,0 +1,376 @@
+---
+title: Components Overview
+description: Complete overview of all components in the Tienda ETCA application
+---
+
+# Components Overview
+
+Tienda ETCA uses a component-based architecture built with React. Components are organized into two main directories: reusable UI components and layout containers.
+
+## Component Categories
+
+<CardGroup cols={2}>
+  <Card title="UI Components" icon="cube" href="#ui-components">
+    Reusable building blocks for the application
+  </Card>
+  <Card title="Layout Components" icon="table-layout" href="#layout-components">
+    Page-level containers and structural components
+  </Card>
+</CardGroup>
+
+## UI Components
+
+Located in `~/workspace/source/src/components/`, these components provide reusable functionality across the application.
+
+### Navigation & Structure
+
+<AccordionGroup>
+  <Accordion title="Header" icon="bars">
+    Main navigation header with logo, menu links, shopping cart, and login/admin access.
+    
+    **Location:** `src/components/Header.jsx`
+    
+    **Features:**
+    - Navigation menu (Inicio, Nosotros, Galería, Contacto)
+    - Shopping cart button with item count
+    - Login and Admin access buttons
+    - Integrates with CartContext for cart state
+    
+    **Dependencies:** CartContext, Cart component, React Router
+  </Accordion>
+
+  <Accordion title="Footer" icon="rectangle-vertical">
+    Application footer with company info, navigation, and contact details.
+    
+    **Location:** `src/components/Footer.jsx`
+    
+    **Features:**
+    - Company information and shipping details
+    - Footer navigation links
+    - Contact information (email, phone, location)
+    - Accepted payment methods
+    - Copyright notice
+  </Accordion>
+</AccordionGroup>
+
+### Content Display
+
+<AccordionGroup>
+  <Accordion title="Main" icon="window">
+    Hero section component with text content on the left and image on the right.
+    
+    **Location:** `src/components/Main.jsx`
+    
+    **Props:**
+    - `titular` (string) - Section heading
+    - `texto` (string) - Description text
+    - `boton` (string) - Button label
+    - `imagen` (string) - Image URL
+    
+    **Layout:** Two-column Bootstrap layout with text left, image right
+  </Accordion>
+
+  <Accordion title="Main2" icon="window">
+    Hero section component with image on the left and text content on the right.
+    
+    **Location:** `src/components/Main2.jsx`
+    
+    **Props:**
+    - `titular` (string) - Section heading
+    - `texto` (string) - Description text
+    - `boton` (string) - Button label
+    - `imagen` (string) - Image URL
+    
+    **Layout:** Two-column Bootstrap layout with image left, text right
+  </Accordion>
+</AccordionGroup>
+
+### Product Components
+
+<AccordionGroup>
+  <Accordion title="Product" icon="tag">
+    Individual product card component displaying product information.
+    
+    **Location:** `src/components/Product.jsx`
+    
+    **Props:**
+    - `product` (object) - Product data containing:
+      - `id` - Product identifier
+      - `nombre` - Product name
+      - `precio` - Product price
+      - `stock` - Available stock
+      - `imagen` - Product image URL
+    
+    **Features:**
+    - Product image display
+    - Name, price, and stock information
+    - "Add to cart" button
+    - "View details" link
+    - Integrates with CartContext
+  </Accordion>
+
+  <Accordion title="ProductList" icon="list">
+    Product gallery with search, pagination, and filtering.
+    
+    **Location:** `src/components/ProductList.jsx`
+    
+    **Features:**
+    - Search input for filtering products
+    - Paginated product display (5 items per page)
+    - Bootstrap pagination controls
+    - Smooth scroll to top on page change
+    - Integrates with CartContext for product data
+    
+    **State Management:**
+    - Uses CartContext for `productosFiltrados` and `busqueda`
+    - Local state for pagination
+  </Accordion>
+
+  <Accordion title="Cart" icon="cart-shopping">
+    Shopping cart drawer with purchase management.
+    
+    **Location:** `src/components/Cart.jsx`
+    
+    **Features:**
+    - Slide-out cart drawer
+    - Product quantity controls (+/-)
+    - Individual item removal
+    - Empty cart button
+    - Total price calculation
+    - Purchase confirmation with SweetAlert2
+    - Integrates with CartContext
+    
+    **Cart Operations:**
+    - Increase/decrease quantity
+    - Remove items
+    - Clear cart
+    - Finalize purchase
+  </Accordion>
+</AccordionGroup>
+
+### Form Components
+
+See the dedicated [Forms Documentation](/development/components/forms) for detailed information about form components.
+
+<CardGroup cols={3}>
+  <Card title="Formulario" icon="envelope">
+    Contact form component
+  </Card>
+  <Card title="FormularioProducto" icon="plus">
+    Add new product form
+  </Card>
+  <Card title="FormularioEdicion" icon="pen-to-square">
+    Edit existing product form
+  </Card>
+</CardGroup>
+
+### Other Components
+
+<AccordionGroup>
+  <Accordion title="Equipo" icon="users">
+    Team member display component showing staff profiles.
+    
+    **Location:** `src/components/Equipo.jsx`
+    
+    **Props:**
+    - `equipo` (array) - Array of team member objects containing:
+      - `nombre` - Member name
+      - `rol` - Member role/position
+      - `imagen` - Profile photo URL
+    
+    **Layout:** Responsive Bootstrap card grid
+  </Accordion>
+
+  <Accordion title="ListaUsuarios" icon="user-group">
+    Demo component that fetches and displays users from an API.
+    
+    **Location:** `src/components/ListaUsuarios.jsx`
+    
+    **Features:**
+    - Fetches data from JSONPlaceholder API
+    - Loading state management
+    - Error handling
+    - Displays user name and website
+    
+    **API:** `https://jsonplaceholder.typicode.com/users`
+  </Accordion>
+
+  <Accordion title="NotFound" icon="triangle-exclamation">
+    404 error page component.
+    
+    **Location:** `src/components/NotFound.jsx`
+    
+    **Features:**
+    - Custom 404 error message
+    - "Go back" button using React Router navigation
+    - Friendly error messaging in Spanish
+  </Accordion>
+</AccordionGroup>
+
+## Layout Components
+
+Located in `~/workspace/source/src/layout/`, these components compose full page layouts.
+
+<CardGroup cols={2}>
+  <Card title="Home" icon="house" href="#home-layout">
+    Main landing page layout
+  </Card>
+  <Card title="GaleriaProductos" icon="store" href="#galeria-layout">
+    Product gallery page layout
+  </Card>
+  <Card title="Admin" icon="user-shield" href="#admin-layout">
+    Administrative dashboard layout
+  </Card>
+  <Card title="DetallesProductos" icon="circle-info" href="#detalles-layout">
+    Product details page layout
+  </Card>
+  <Card title="AcercaDe" icon="users" href="#acercade-layout">
+    About us page layout
+  </Card>
+  <Card title="Contacto" icon="envelope" href="#contacto-layout">
+    Contact page layout
+  </Card>
+  <Card title="Login" icon="right-to-bracket" href="#login-layout">
+    Login page layout
+  </Card>
+</CardGroup>
+
+### Home Layout
+
+**Location:** `src/layout/Home.jsx`
+
+**Composed Components:**
+- Header
+- Main (hero section)
+- ProductList
+- Cart
+- Main2 (secondary content)
+- Footer
+
+**Features:**
+- Loading state with animated GIF
+- Error handling with NotFound component
+- Uses CartContext for loading and error states
+
+### Galeria Layout
+
+**Location:** `src/layout/GaleriaProductos.jsx`
+
+**Composed Components:**
+- Header
+- ProductList
+- Cart
+- Footer
+
+**Features:**
+- Dedicated product browsing page
+- Loading state management
+- Full product catalog display
+
+### Admin Layout
+
+**Location:** `src/layout/Admin.jsx`
+
+**Composed Components:**
+- FormularioProducto (conditional)
+- FormularioEdicion (conditional)
+
+**Features:**
+- Product management dashboard
+- Add, edit, and delete products
+- Custom admin navigation
+- Logout functionality
+- Uses AdminContext for product operations
+- Modal-based forms for product management
+
+<Note>
+  The Admin layout requires authentication. It integrates with AuthContext to manage user authentication state.
+</Note>
+
+## Context Integration
+
+Many components integrate with React Context for state management:
+
+<CodeGroup>
+```jsx CartContext
+// Used by: Header, Product, ProductList, Cart, Home, GaleriaProductos
+import { CartContext } from '../context/CartContext';
+
+const { 
+  cart, 
+  cartCount, 
+  isCartOpen, 
+  setCartOpen,
+  handleAddToCart,
+  productosFiltrados,
+  busqueda,
+  setBusqueda
+} = useContext(CartContext);
+```
+
+```jsx AdminContext
+// Used by: Admin layout
+import { AdminContext } from '../context/AdminContext';
+
+const { 
+  productos, 
+  loading, 
+  agregarProducto, 
+  actualizarProducto, 
+  eliminarProducto 
+} = useContext(AdminContext);
+```
+
+```jsx AuthContext
+// Used by: Admin layout, Login
+import { useAuth } from '../context/AuthContext';
+
+const { isAuth, setIsAuth } = useAuth();
+```
+</CodeGroup>
+
+## File Structure
+
+```
+src/
+├── components/
+│   ├── Cart.jsx
+│   ├── Equipo.jsx
+│   ├── Footer.jsx
+│   ├── Formulario.jsx
+│   ├── FormularioEdicion.jsx
+│   ├── FormularioProducto.jsx
+│   ├── Header.jsx
+│   ├── ListaUsuarios.jsx
+│   ├── Main.jsx
+│   ├── Main2.jsx
+│   ├── NotFound.jsx
+│   ├── Product.jsx
+│   ├── ProductList.jsx
+│   └── style/
+│       ├── Footer.css
+│       ├── Header.css
+│       ├── Modal.css
+│       ├── NotFound.css
+│       └── Product.css
+└── layout/
+    ├── AcercaDe.jsx
+    ├── Admin.jsx
+    ├── Contacto.jsx
+    ├── DetallesProductos.jsx
+    ├── GaleriaProductos.jsx
+    ├── Home.jsx
+    ├── Login.jsx
+    └── layoutMain.css
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Layout Components" icon="table-layout" href="/development/components/layout">
+    Detailed documentation for Header, Footer, and Main components
+  </Card>
+  <Card title="Form Components" icon="file-lines" href="/development/components/forms">
+    Complete guide to form components and validation
+  </Card>
+</CardGroup>

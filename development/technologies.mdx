@@ -1,0 +1,491 @@
+---
+title: Technologies Used
+description: Complete overview of the technology stack, dependencies, and tools used in Tienda ETCA
+---
+
+## Technology Stack Overview
+
+Tienda ETCA is built with modern web technologies focused on React ecosystem tools. The application uses Vite for fast development and optimized builds, with a carefully selected set of dependencies for UI, routing, and state management.
+
+## Core Technologies
+
+<CardGroup cols={2}>
+  <Card title="React 19" icon="react" color="#61dafb">
+    Latest React version with improved performance and concurrent features
+  </Card>
+  <Card title="Vite 6.3" icon="bolt" color="#646cff">
+    Lightning-fast build tool with instant HMR
+  </Card>
+  <Card title="React Router 7" icon="route" color="#ca4245">
+    Client-side routing with nested routes and protected routes
+  </Card>
+  <Card title="Bootstrap 5" icon="bootstrap" color="#7952b3">
+    Responsive UI framework for layout and components
+  </Card>
+</CardGroup>
+
+## Dependencies Breakdown
+
+Based on `~/workspace/source/package.json`:
+
+### Production Dependencies
+
+<AccordionGroup>
+  <Accordion title="React Ecosystem">
+    **Core Libraries**
+    
+    ```json
+    "react": "^19.0.0"
+    "react-dom": "^19.0.0"
+    ```
+    
+    - **React 19.0.0** - Core library for building UI components
+    - **React DOM 19.0.0** - React rendering for web browsers
+    
+    **Features Used:**
+    - Functional components with hooks
+    - Context API for state management
+    - StrictMode for development warnings
+    - Concurrent rendering capabilities
+  </Accordion>
+
+  <Accordion title="Routing">
+    ```json
+    "react-router-dom": "^7.5.3"
+    ```
+    
+    **React Router DOM 7.5.3**
+    
+    Latest version with enhanced features:
+    - Client-side routing
+    - Nested routes
+    - Route parameters (e.g., `/productos/:id`)
+    - Protected routes via wrapper components
+    - Programmatic navigation with `useNavigate`
+    - `BrowserRouter` for clean URLs
+    
+    **Implementation:**
+    ```jsx
+    import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+    ```
+  </Accordion>
+
+  <Accordion title="UI Framework & Styling">
+    ```json
+    "bootstrap": "^5.3.7"
+    "react-bootstrap": "^2.10.10"
+    "@popperjs/core": "^2.11.8"
+    ```
+    
+    **Bootstrap 5.3.7**
+    - Modern CSS framework
+    - Responsive grid system
+    - Pre-built components
+    - Utility classes
+    
+    **React Bootstrap 2.10.10**
+    - Bootstrap components as React components
+    - No jQuery dependency
+    - Better integration with React
+    
+    **Popper.js 2.11.8**
+    - Tooltip and popover positioning
+    - Required by Bootstrap for dropdowns
+  </Accordion>
+
+  <Accordion title="User Notifications">
+    ```json
+    "react-toastify": "^11.0.5"
+    "sweetalert2": "^11.22.2"
+    ```
+    
+    **React Toastify 11.0.5**
+    
+    Used for cart operations and user feedback:
+    ```jsx
+    import { ToastContainer, toast } from 'react-toastify';
+    import 'react-toastify/dist/ReactToastify.css';
+    
+    toast.success(`"${product.nombre}" agregado al carrito`);
+    toast.info(`Cantidad aumentada`);
+    ```
+    
+    **Features:**
+    - Non-blocking notifications
+    - Multiple toast types (success, error, info, warning)
+    - Customizable position and duration
+    - Auto-dismiss
+    
+    **SweetAlert2 11.22.2**
+    
+    Used for confirmations and admin alerts:
+    ```jsx
+    import Swal from 'sweetalert2';
+    
+    Swal.fire({
+      title: '¿Estás seguro de eliminar el producto?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+    });
+    ```
+    
+    **Use Cases:**
+    - Delete confirmations
+    - Success/error messages for CRUD operations
+    - Admin panel alerts
+  </Accordion>
+
+  <Accordion title="Icons">
+    ```json
+    "react-icons": "^5.5.0"
+    ```
+    
+    **React Icons 5.5.0**
+    
+    Provides popular icon sets as React components:
+    - Font Awesome
+    - Material Design Icons
+    - Bootstrap Icons
+    - And many more
+    
+    **Usage:**
+    ```jsx
+    import { FaShoppingCart, FaUser, FaTrash } from 'react-icons/fa';
+    
+    <FaShoppingCart size={24} />
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Development Dependencies
+
+<AccordionGroup>
+  <Accordion title="Build Tool">
+    ```json
+    "vite": "^6.3.1"
+    "@vitejs/plugin-react": "^4.3.4"
+    ```
+    
+    **Vite 6.3.1**
+    
+    Modern build tool with:
+    - Instant server start
+    - Lightning-fast Hot Module Replacement (HMR)
+    - Optimized production builds
+    - Native ES modules support
+    - Built-in TypeScript support
+    
+    **Vite React Plugin 4.3.4**
+    - Fast Refresh for React
+    - JSX transformation
+    - React DevTools integration
+    
+    **Scripts:**
+    ```json
+    "dev": "vite",              // Start dev server
+    "build": "vite build",       // Production build
+    "preview": "vite preview"    // Preview production build
+    ```
+  </Accordion>
+
+  <Accordion title="Code Quality">
+    ```json
+    "eslint": "^9.22.0"
+    "@eslint/js": "^9.22.0"
+    "eslint-plugin-react-hooks": "^5.2.0"
+    "eslint-plugin-react-refresh": "^0.4.19"
+    "globals": "^16.0.0"
+    ```
+    
+    **ESLint 9.22.0**
+    
+    Code linting and quality enforcement:
+    - Syntax error detection
+    - Best practice recommendations
+    - Code style consistency
+    
+    **React-Specific Plugins:**
+    - **eslint-plugin-react-hooks** - Enforces Rules of Hooks
+    - **eslint-plugin-react-refresh** - Ensures Fast Refresh compatibility
+    
+    **Script:**
+    ```json
+    "lint": "eslint ."
+    ```
+  </Accordion>
+
+  <Accordion title="Type Checking">
+    ```json
+    "@types/react": "^19.0.10"
+    "@types/react-dom": "^19.0.4"
+    ```
+    
+    **TypeScript Type Definitions**
+    
+    While the project uses JavaScript, these types:
+    - Enable better IDE autocomplete
+    - Provide inline documentation
+    - Help catch potential errors during development
+    - Support future TypeScript migration
+  </Accordion>
+</AccordionGroup>
+
+## External APIs
+
+<Card title="MockAPI" icon="database" href="https://mockapi.io">
+  **Base URL:** `https://681cdce3f74de1d219ae0bdb.mockapi.io/tiendatobe`
+  
+  REST API for product data and CRUD operations
+</Card>
+
+**Endpoints Used:**
+
+| Method | Endpoint | Purpose | Context |
+|--------|----------|---------|----------|
+| GET | `/productos` | Fetch all products | CartContext, AdminContext |
+| POST | `/productos` | Create new product | AdminContext |
+| PUT | `/productos/:id` | Update product | AdminContext |
+| DELETE | `/productos/:id` | Delete product | AdminContext |
+
+**Example API Call:**
+```jsx
+// From CartContext.jsx:65-82
+fetch("https://681cdce3f74de1d219ae0bdb.mockapi.io/tiendatobe/productos")
+  .then((respuesta) => respuesta.json())
+  .then((datos) => {
+    setProductos(datos);
+    setCarga(false);
+  })
+  .catch((error) => {
+    console.error("Error:", error);
+    setError(true);
+  });
+```
+
+## State Management
+
+<Accordion title="React Context API">
+  **Built-in State Management**
+  
+  No external state management library (Redux, MobX, etc.) needed.
+  
+  **Three Context Providers:**
+  1. **AuthContext** - Authentication and authorization
+  2. **CartContext** - Shopping cart and products
+  3. **AdminContext** - Admin panel operations
+  
+  **Benefits:**
+  - No additional dependencies
+  - Simple API with hooks
+  - Sufficient for application scale
+  - Built-in to React
+  
+  **Custom Hooks:**
+  ```jsx
+  export const useAuth = () => useContext(AuthContext);
+  ```
+</Accordion>
+
+## Browser Storage
+
+**localStorage** - Client-side persistence
+
+```jsx
+// From AuthContext.jsx:56-57
+localStorage.setItem('isAuth', true);
+localStorage.setItem('role', foundUser.role);
+
+// On app load:
+const isAuthenticated = localStorage.getItem('isAuth') === 'true';
+const userRole = localStorage.getItem('role') || '';
+```
+
+**Stored Data:**
+- Authentication status (`isAuth`)
+- User role (`role` - 'admin' or 'cliente')
+
+## Development Tools
+
+<CardGroup cols={2}>
+  <Card title="Vite Dev Server" icon="server">
+    Fast development with instant HMR at `localhost:5173`
+  </Card>
+  <Card title="React DevTools" icon="react">
+    Browser extension for inspecting React components
+  </Card>
+  <Card title="ESLint" icon="check">
+    Code quality and consistency checks
+  </Card>
+  <Card title="Browser Console" icon="terminal">
+    Debugging with console.log and error messages
+  </Card>
+</CardGroup>
+
+## Version Compatibility
+
+<Info>
+  **Node.js Requirements**
+  
+  While not explicitly specified in package.json, Vite 6 requires:
+  - Node.js 18+ or 20+
+  - npm 7+ or yarn/pnpm
+</Info>
+
+**Key Version Upgrades:**
+- React 19 (latest) - Uses modern concurrent features
+- React Router 7 (latest) - Enhanced routing capabilities
+- Vite 6 (latest) - Improved build performance
+- Bootstrap 5 (no jQuery) - Modern CSS framework
+
+## Build Configuration
+
+### Vite Configuration
+
+While not shown in the provided files, typical Vite config for React:
+
+```javascript
+// vite.config.js (typical setup)
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    port: 5173,
+    open: true
+  },
+  build: {
+    outDir: 'dist',
+    sourcemap: true
+  }
+})
+```
+
+## CSS Architecture
+
+**Multiple Styling Approaches:**
+
+1. **Bootstrap Classes** - Utility and component classes
+2. **Custom CSS** - Component-specific styles in `components/style/`
+3. **Global Styles** - `index.css` and `App.css`
+4. **React Toastify CSS** - Imported from node_modules
+
+```jsx
+// CSS Imports
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'react-toastify/dist/ReactToastify.css';
+import './components/style/Header.css';
+```
+
+## Package Scripts
+
+```json
+{
+  "scripts": {
+    "dev": "vite",           // Start development server
+    "build": "vite build",   // Build for production
+    "lint": "eslint .",      // Run linter
+    "preview": "vite preview" // Preview production build locally
+  }
+}
+```
+
+**Workflow:**
+
+<Steps>
+  <Step title="Development">
+    Run `npm run dev` to start dev server with hot reload
+  </Step>
+  <Step title="Linting">
+    Run `npm run lint` to check code quality
+  </Step>
+  <Step title="Build">
+    Run `npm run build` to create optimized production bundle
+  </Step>
+  <Step title="Preview">
+    Run `npm run preview` to test production build locally
+  </Step>
+</Steps>
+
+## Technology Decisions
+
+<AccordionGroup>
+  <Accordion title="Why React 19?">
+    Latest React version with:
+    - Improved concurrent rendering
+    - Better performance
+    - Enhanced developer experience
+    - Future-proof application
+  </Accordion>
+  
+  <Accordion title="Why Vite over Create React App?">
+    Vite provides:
+    - 10-100x faster dev server startup
+    - Instant Hot Module Replacement
+    - Faster production builds
+    - Modern tooling (ESM, esbuild)
+    - Better developer experience
+  </Accordion>
+  
+  <Accordion title="Why Bootstrap 5?">
+    Bootstrap 5 offers:
+    - No jQuery dependency (lighter)
+    - Modern CSS Grid/Flexbox
+    - Comprehensive component library
+    - Responsive utilities
+    - Well-documented
+  </Accordion>
+  
+  <Accordion title="Why Context API over Redux?">
+    For this application size:
+    - Simpler API and setup
+    - No additional dependencies
+    - Built into React
+    - Sufficient state management
+    - Easier to learn and maintain
+  </Accordion>
+  
+  <Accordion title="Why Two Notification Libraries?">
+    Different use cases:
+    - **React Toastify**: Quick, non-blocking notifications (cart actions)
+    - **SweetAlert2**: Modal confirmations and important alerts (delete confirmations)
+  </Accordion>
+</AccordionGroup>
+
+## Dependency Summary
+
+**Total Dependencies:** 8 production + 9 development = 17 packages
+
+<Card title="Lightweight Stack" icon="feather">
+  Minimal dependencies focused on essential functionality, resulting in faster installs and smaller bundle size.
+</Card>
+
+## Future Considerations
+
+<CardGroup cols={2}>
+  <Card title="TypeScript Migration" icon="code">
+    Type definitions already included for smooth migration path
+  </Card>
+  <Card title="Testing" icon="flask">
+    Consider adding Vitest for unit tests and React Testing Library
+  </Card>
+  <Card title="Real Backend" icon="server">
+    Replace MockAPI with real backend (Node.js, Django, etc.)
+  </Card>
+  <Card title="State Management" icon="database">
+    If app grows, consider Zustand or Redux Toolkit
+  </Card>
+</CardGroup>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Architecture" icon="sitemap" href="/development/architecture">
+    Understand how these technologies work together
+  </Card>
+  <Card title="Project Structure" icon="folder-tree" href="/development/project-structure">
+    See how files are organized
+  </Card>
+</CardGroup>

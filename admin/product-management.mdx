@@ -1,0 +1,311 @@
+---
+title: Product Management
+description: Add, edit, and delete products using the admin panel
+---
+
+The product management system provides full CRUD operations through the `AdminContext` and modal-based forms. All operations interact with a MockAPI backend.
+
+## API Configuration
+
+The admin panel connects to MockAPI for product data:
+
+```javascript
+const apiUrl = "https://681cdce3f74de1d219ae0bdb.mockapi.io/tiendatobe/productos"
+```
+
+Reference: `/workspace/source/src/context/AdminContext.jsx:12`
+
+## Product Data Structure
+
+Products contain the following fields:
+
+<ResponseField name="id" type="string" required>
+  Auto-generated product identifier
+</ResponseField>
+
+<ResponseField name="nombre" type="string" required>
+  Product name
+</ResponseField>
+
+<ResponseField name="precio" type="number" required>
+  Product price (must be greater than 0)
+</ResponseField>
+
+<ResponseField name="descripcion" type="string" required>
+  Product description (minimum 10 characters)
+</ResponseField>
+
+<ResponseField name="stock" type="number">
+  Available stock quantity
+</ResponseField>
+
+<ResponseField name="imagen" type="string">
+  URL to product image
+</ResponseField>
+
+<ResponseField name="categoria" type="string">
+  Product category
+</ResponseField>
+
+## Adding Products
+
+### Opening the Add Form
+
+Click the "Abrir panel agregar producto" button to open the `FormularioProducto` modal:
+
+```jsx
+<button className="btn-inicio" onClick={() => setOpen(true)}>
+  Abrir panel agregar producto
+</button>
+```
+
+Reference: `/workspace/source/src/layout/Admin.jsx:61`
+
+### Form Validation
+
+The add form includes validation rules:
+
+```jsx
+const validarFormulario = () => {
+  const nuevosErrores = {};
+  if (!producto.nombre.trim()) 
+    nuevosErrores.nombre = 'El nombre es obligatorio.';
+  if (!producto.precio || producto.precio <= 0) 
+    nuevosErrores.precio = 'El precio debe ser mayor a 0.';
+  if (!producto.descripcion.trim() || producto.descripcion.length < 10)
+    nuevosErrores.descripcion = 'La descripción debe tener al menos 10 caracteres.';
+  setErrores(nuevosErrores);
+  return Object.keys(nuevosErrores).length === 0;
+};
+```
+
+Reference: `/workspace/source/src/components/FormularioProducto.jsx:17-25`
+
+### API Call: POST Request
+
+When the form is submitted, the `agregarProducto` function sends a POST request:
+
+```jsx
+const agregarProducto = async (producto) => {
+  try {
+    const respuesta = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(producto)
+    })
+    if (!respuesta.ok) {
+      throw new Error('Error al agregar producto')
+    }
+    const data = await respuesta.json()
+    Swal.fire({
+      title: "Realizado!",
+      text: "Producto agregado correctamente!",
+      icon: "success"
+    });
+    cargarProductos()
+  } catch (error) {
+    console.log(error.message);
+  }
+}
+```
+
+Reference: `/workspace/source/src/context/AdminContext.jsx:30-54`
+
+<Note>
+  After adding a product, `cargarProductos()` is called to refresh the product list.
+</Note>
+
+## Editing Products
+
+### Opening the Edit Form
+
+Click the "Editar" button on any product card:
+
+```jsx
+<button className="editButton" onClick={() => {
+  setOpenEditor(true)
+  setSeleccionado(product)
+}}>
+  Editar
+</button>
+```
+
+Reference: `/workspace/source/src/layout/Admin.jsx:50-53`
+
+This opens the `FormularioEdicion` modal with the selected product data pre-filled.
+
+### Edit Form Fields
+
+The edit form (`FormularioEdicion`) includes all product fields:
+
+- **ID** (read-only)
+- **Nombre** (text input)
+- **Precio** (number input, min: 0)
+- **Stock** (number input)
+- **Imagen** (text input for URL)
+- **Categoría** (text input)
+- **Descripción** (textarea)
+
+Reference: `/workspace/source/src/components/FormularioEdicion.jsx:35-124`
+
+### API Call: PUT Request
+
+The `actualizarProducto` function sends a PUT request:
+
+```jsx
+const actualizarProducto = async (producto) => {
+  try {
+    const respuesta = await fetch(`${apiUrl}/${producto.id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(producto),
+    });
+
+    if (!respuesta.ok) throw Error('Error al actualizar el producto');
+
+    const data = await respuesta.json();
+    Swal.fire({
+      title: "Realizado!",
+      text: "Producto actualizado correctamente!",
+      icon: "success"
+    });
+    setOpenEditor(false);
+    setSeleccionado(null);
+    cargarProductos();
+  } catch (error) {
+    console.log(error.message);
+  }
+};
+```
+
+Reference: `/workspace/source/src/context/AdminContext.jsx:101-126`
+
+## Deleting Products
+
+### Triggering Delete
+
+Click the "Eliminar" button on any product card:
+
+```jsx
+<button className="deleteButton" onClick={() => eliminarProducto(product.id)}>
+  Eliminar
+</button>
+```
+
+Reference: `/workspace/source/src/layout/Admin.jsx:54`
+
+### Confirmation Dialog
+
+Before deleting, a SweetAlert2 confirmation dialog appears:
+
+```jsx
+const result = await Swal.fire({
+  title: '¿Estás seguro de eliminar el producto?',
+  icon: 'warning',
+  showCancelButton: true,
+  confirmButtonText: 'Sí, eliminar',
+  cancelButtonText: 'Cancelar',
+});
+```
+
+Reference: `/workspace/source/src/context/AdminContext.jsx:70-76`
+
+### API Call: DELETE Request
+
+If confirmed, a DELETE request is sent:
+
+```jsx
+if (result.isConfirmed) {
+  try {
+    const respuesta = await fetch(
+      `https://681cdce3f74de1d219ae0bdb.mockapi.io/tiendatobe/productos/${id}`,
+      {
+        method: 'DELETE',
+      }
+    );
+    if (!respuesta.ok) throw new Error('Error al eliminar');
+
+    Swal.fire({
+      title: "Realizado!",
+      text: "Producto eliminado correctamente!",
+      icon: "success",
+    });
+
+    cargarProductos();
+  } catch (error) {
+    Swal.fire({
+      title: "Error!",
+      text: "Hubo un problema al eliminar el producto!",
+      icon: "error"
+    });
+  }
+}
+```
+
+Reference: `/workspace/source/src/context/AdminContext.jsx:78-99`
+
+## Loading Products
+
+Products are loaded automatically when the `AdminContext` mounts:
+
+```jsx
+useEffect(() => {
+  fetch(apiUrl)
+    .then((response) => response.json())
+    .then((data) => {
+      setTimeout(() => {
+        setProductos(data);
+        setLoading(false);
+      }, 2000);
+    })
+    .catch((error) => {
+      console.error("Error fetching data:", error);
+      setError(true);
+      setLoading(false);
+    });
+}, []);
+```
+
+Reference: `/workspace/source/src/context/AdminContext.jsx:14-28`
+
+<Info>
+  A 2-second delay is added to simulate loading time and show the loading state.
+</Info>
+
+## Reload Function
+
+After any CRUD operation, products are reloaded:
+
+```jsx
+const cargarProductos = async () => {
+  try {
+    const res = await fetch(apiUrl)
+    const data = await res.json()
+    setProductos(data)
+  } catch (error) {
+    console.log('Error al cargar productos ', error)
+  }
+}
+```
+
+Reference: `/workspace/source/src/context/AdminContext.jsx:56-64`
+
+## User Feedback
+
+All operations use SweetAlert2 for user feedback:
+
+<CardGroup cols={3}>
+  <Card title="Success" icon="circle-check" color="#10b981">
+    Shown after successful add, edit, or delete
+  </Card>
+  <Card title="Error" icon="circle-xmark" color="#ef4444">
+    Shown when operations fail
+  </Card>
+  <Card title="Warning" icon="triangle-exclamation" color="#f59e0b">
+    Shown before delete confirmation
+  </Card>
+</CardGroup>

@@ -1,0 +1,88 @@
+---
+title: Admin Panel Overview
+description: Overview of the Tienda ETCA administrative panel and its capabilities
+---
+
+The admin panel provides a comprehensive interface for managing products in the Tienda ETCA e-commerce platform. It is restricted to users with the `admin` role and provides full CRUD (Create, Read, Update, Delete) operations.
+
+## Features
+
+The admin panel includes the following capabilities:
+
+<CardGroup cols={2}>
+  <Card title="Product Management" icon="box">
+    Add, edit, and delete products from the catalog
+  </Card>
+  <Card title="Real-time Updates" icon="refresh">
+    Changes are immediately reflected via API integration
+  </Card>
+  <Card title="Product Listing" icon="list">
+    View all products with images, names, and prices
+  </Card>
+  <Card title="Modal Forms" icon="window-maximize">
+    User-friendly modal dialogs for adding and editing products
+  </Card>
+</CardGroup>
+
+## Admin Panel Interface
+
+The admin panel is implemented in the `Admin` component (`/workspace/source/src/layout/Admin.jsx`) and provides:
+
+### Navigation
+
+- **Logout button**: Clears authentication and redirects to home
+- **Admin link**: Quick navigation to admin panel
+
+### Product Display
+
+Products are displayed in a grid layout with:
+- Product image
+- Product name
+- Product price
+- Action buttons (Edit/Delete)
+
+### Action Buttons
+
+<AccordionGroup>
+  <Accordion title="Add Product Button">
+    Opens the `FormularioProducto` modal to add a new product to the catalog.
+  </Accordion>
+  <Accordion title="Edit Button">
+    Opens the `FormularioEdicion` modal with the selected product's data pre-filled for editing.
+  </Accordion>
+  <Accordion title="Delete Button">
+    Triggers a confirmation dialog before removing the product from the catalog.
+  </Accordion>
+</AccordionGroup>
+
+## Access Control
+
+The admin panel is protected by:
+
+1. **Authentication check**: User must be logged in
+2. **Role verification**: User must have `admin` role
+3. **Route protection**: Implemented via `RutaProtegida` component
+
+See [Protected Routes](/admin/protected-routes) for implementation details.
+
+## State Management
+
+The admin panel uses the `AdminContext` to manage:
+
+- Product list
+- Loading states
+- Modal visibility (add/edit)
+- Selected product for editing
+- CRUD operations
+
+Reference: `/workspace/source/src/context/AdminContext.jsx`
+
+## API Integration
+
+All product operations connect to:
+
+```
+https://681cdce3f74de1d219ae0bdb.mockapi.io/tiendatobe/productos
+```
+
+See [Product Management](/admin/product-management) for detailed API operations.

@@ -1,0 +1,342 @@
+---
+title: 'CartContext'
+description: 'Shopping cart state management and product operations for the Tienda ETCA e-commerce platform'
+---
+
+## Overview
+
+The `CartContext` provides centralized state management for the shopping cart, product catalog, and search functionality. It handles cart operations like adding, removing, and updating products, as well as fetching products from the API.
+
+**Source:** `~/workspace/source/src/context/CartContext.jsx`
+
+## Setup
+
+Wrap your application with the `CartProvider` to make the context available to all components:
+
+```jsx
+import { CartProvider } from './context/CartContext';
+
+function App() {
+  return (
+    <CartProvider>
+      {/* Your app components */}
+    </CartProvider>
+  );
+}
+```
+
+## Usage
+
+Access the cart context in any component:
+
+```jsx
+import { useContext } from 'react';
+import { CartContext } from '../context/CartContext';
+
+function MyComponent() {
+  const { cart, handleAddToCart, vaciarCarrito } = useContext(CartContext);
+  
+  // Use cart methods and state
+}
+```
+
+## State Properties
+
+### cart
+
+<ParamField path="cart" type="array">
+  Array of product objects currently in the shopping cart. Each item includes the product data plus a `cantidad` (quantity) property.
+</ParamField>
+
+```jsx
+// Example cart item structure
+{
+  id: "1",
+  nombre: "Arco Recurvo",
+  precio: 250,
+  imagen: "url-to-image",
+  stock: 10,
+  cantidad: 2  // Added by cart
+}
+```
+
+### productos
+
+<ParamField path="productos" type="array">
+  Complete product catalog fetched from the API. Updated on component mount.
+</ParamField>
+
+### productosFiltrados
+
+<ParamField path="productosFiltrados" type="array">
+  Filtered product list based on the current search query (`busqueda`). Automatically filters by product name (case-insensitive).
+</ParamField>
+
+### cartCount
+
+<ParamField path="cartCount" type="number">
+  Number of unique items in the cart (not total quantity).
+</ParamField>
+
+### isCartOpen
+
+<ParamField path="isCartOpen" type="boolean">
+  Controls the visibility of the cart drawer/modal.
+</ParamField>
+
+### setCartOpen
+
+<ParamField path="setCartOpen" type="function">
+  Function to toggle cart drawer visibility.
+</ParamField>
+
+```jsx
+const { isCartOpen, setCartOpen } = useContext(CartContext);
+
+// Open cart
+setCartOpen(true);
+
+// Close cart
+setCartOpen(false);
+```
+
+### busqueda
+
+<ParamField path="busqueda" type="string">
+  Current search query string.
+</ParamField>
+
+### setBusqueda
+
+<ParamField path="setBusqueda" type="function">
+  Update the search query. Automatically filters `productosFiltrados`.
+</ParamField>
+
+### carga
+
+<ParamField path="carga" type="boolean">
+  Loading state while fetching products from the API. Initially `true`, becomes `false` after 2-second delay.
+</ParamField>
+
+### error
+
+<ParamField path="error" type="boolean">
+  Error state if product fetching fails.
+</ParamField>
+
+## Methods
+
+### handleAddToCart
+
+Adds a product to the cart or increments quantity if already present. Displays toast notifications.
+
+<ParamField path="product" type="object" required>
+  Product object to add. Must include `cantidad` property set to `1` for new additions.
+</ParamField>
+
+**Behavior:**
+- If product exists in cart: increments `cantidad` by 1
+- If product is new: adds to cart with specified `cantidad`
+- Shows success toast for new items
+- Shows info toast for quantity increases
+
+**Example:**
+
+```jsx src/components/Product.jsx
+import { useContext } from 'react';
+import { CartContext } from '../context/CartContext';
+
+function Product({ product }) {
+  const { handleAddToCart } = useContext(CartContext);
+
+  return (
+    <button onClick={() => handleAddToCart({ ...product, cantidad: 1 })}>
+      Agregar
+    </button>
+  );
+}
+```
+
+### eliminarProducto
+
+Completely removes a product from the cart regardless of quantity.
+
+<ParamField path="product" type="object" required>
+  Product object with `id` property to identify which item to remove.
+</ParamField>
+
+**Example:**
+
+```jsx src/components/Cart.jsx
+const { cart, eliminarProducto } = useContext(CartContext);
+
+return (
+  <ul>
+    {cart.map((item) => (
+      <li key={item.id}>
+        {item.nombre}
+        <button onClick={() => eliminarProducto(item)}>
+          <i className="fa-solid fa-trash"></i>
+        </button>
+      </li>
+    ))}
+  </ul>
+);
+```
+
+### borrarProducto
+
+Decrements the quantity of a product by 1. Removes the product entirely if quantity reaches 0.
+
+<ParamField path="product" type="object" required>
+  Product object with `id` and `cantidad` properties.
+</ParamField>
+
+**Behavior:**
+- If `cantidad > 1`: decrements by 1
+- If `cantidad === 1`: removes product from cart
+
+**Example:**
+
+```jsx src/components/Cart.jsx
+const { cart, borrarProducto } = useContext(CartContext);
+
+const decrease = (item) => {
+  if (item.cantidad > 1) {
+    borrarProducto(item);
+  }
+};
+
+return (
+  <button onClick={() => decrease(item)}>-</button>
+);
+```
+
+### vaciarCarrito
+
+Clears all items from the cart.
+
+**No parameters**
+
+**Example:**
+
+```jsx src/components/Cart.jsx
+const { vaciarCarrito } = useContext(CartContext);
+
+return (
+  <button onClick={vaciarCarrito}>
+    Vaciar Carrito
+  </button>
+);
+```
+
+## Complete Usage Example
+
+Here's a full example from the Cart component showing all cart operations:
+
+```jsx src/components/Cart.jsx
+import React, { useContext } from 'react';
+import { CartContext } from '../context/CartContext';
+import Swal from 'sweetalert2';
+
+const Cart = () => {
+  const {
+    cart,
+    vaciarCarrito,
+    borrarProducto,
+    handleAddToCart,
+    eliminarProducto,
+    isCartOpen,
+    setCartOpen,
+  } = useContext(CartContext);
+
+  const increase = (item) => {
+    handleAddToCart({ ...item, cantidad: 1 });
+  };
+
+  const decrease = (item) => {
+    if (item.cantidad > 1) {
+      borrarProducto(item);
+    }
+  };
+
+  const total = cart.reduce((acc, item) => acc + item.precio * item.cantidad, 0);
+
+  const finalizarCompra = () => {
+    if (cart.length === 0) {
+      Swal.fire('Carrito vacío', 'No hay productos para comprar.', 'info');
+      return;
+    }
+    
+    Swal.fire({
+      title: 'Confirma tu compra',
+      html: `<p>Total: $${total.toFixed(2)}</p>`,
+      showCancelButton: true,
+      confirmButtonText: 'Aceptar',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        vaciarCarrito();
+        Swal.fire('Compra finalizada', '¡Gracias por tu compra!', 'success');
+      }
+    });
+  };
+
+  return (
+    <div className={`cart-drawer ${isCartOpen ? 'open' : ''}`}>
+      <div className="cart-header">
+        <h2>Carrito de Compras</h2>
+        <button onClick={() => setCartOpen(false)}>✕</button>
+      </div>
+      
+      <div className="cart-content">
+        {cart.length === 0 ? (
+          <p>El carrito está vacío.</p>
+        ) : (
+          <>
+            <ul>
+              {cart.map((item) => (
+                <li key={item.id}>
+                  {item.nombre} - ${item.precio} c/u
+                  <div>
+                    <button onClick={() => decrease(item)}>-</button>
+                    <span>{item.cantidad}</span>
+                    <button onClick={() => increase(item)}>+</button>
+                    <button onClick={() => eliminarProducto(item)}>
+                      <i className="fa-solid fa-trash"></i>
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+            
+            <div>Total: ${total.toFixed(2)}</div>
+            
+            <div>
+              <button onClick={vaciarCarrito}>Vaciar Carrito</button>
+              <button onClick={finalizarCompra}>Finalizar Compra</button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default Cart;
+```
+
+## API Endpoint
+
+The context fetches products from:
+```
+https://681cdce3f74de1d219ae0bdb.mockapi.io/tiendatobe/productos
+```
+
+Fetch occurs on mount with a 2-second simulated delay for loading state demonstration.
+
+## Implementation Details
+
+- **Toast Notifications**: Uses `react-toastify` for add-to-cart feedback
+- **Local State**: Cart state is stored in component state (not persisted)
+- **Auto-filtering**: Search filter updates automatically when `busqueda` changes
+- **Error Handling**: Displays error message if API fetch fails

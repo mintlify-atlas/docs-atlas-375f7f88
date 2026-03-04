@@ -1,0 +1,418 @@
+---
+title: Installation
+description: Complete installation guide for Tienda ETCA e-commerce platform
+---
+
+## Prerequisites
+
+Before installing Tienda ETCA, ensure you have the following installed on your system:
+
+<CardGroup cols={2}>
+  <Card title="Node.js" icon="node-js">
+    Version 18.x or higher recommended
+  </Card>
+  <Card title="npm" icon="npm">
+    Version 9.x or higher (comes with Node.js)
+  </Card>
+  <Card title="Git" icon="git">
+    Latest stable version
+  </Card>
+  <Card title="Modern browser" icon="browser">
+    Chrome, Firefox, Safari, or Edge
+  </Card>
+</CardGroup>
+
+### Verify prerequisites
+
+Check your installed versions:
+
+```bash
+node --version
+npm --version
+git --version
+```
+
+<Info>
+  If you need to install Node.js, visit [nodejs.org](https://nodejs.org) and download the LTS version.
+</Info>
+
+## Installation steps
+
+<Steps>
+  <Step title="Clone the repository">
+    Clone the project repository to your local machine:
+
+    ```bash
+    git clone <your-repository-url>
+    cd tienda-etca
+    ```
+  </Step>
+
+  <Step title="Install dependencies">
+    Install all project dependencies using npm:
+
+    ```bash
+    npm install
+    ```
+
+    This command will install all dependencies listed in `package.json`.
+  </Step>
+
+  <Step title="Verify installation">
+    Verify that all dependencies were installed correctly:
+
+    ```bash
+    npm list --depth=0
+    ```
+
+    You should see a list of all installed packages without errors.
+  </Step>
+
+  <Step title="Start development server">
+    Launch the development server:
+
+    ```bash
+    npm run dev
+    ```
+
+    The application will start at `http://localhost:5173`
+  </Step>
+</Steps>
+
+## Dependencies
+
+Tienda ETCA relies on the following core dependencies:
+
+### Production dependencies
+
+<AccordionGroup>
+  <Accordion title="React & React DOM (^19.0.0)">
+    The core React library for building user interfaces.
+
+    ```json package.json
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+    ```
+
+    React 19 provides improved performance and new features for the application.
+  </Accordion>
+
+  <Accordion title="React Router DOM (^7.5.3)">
+    Client-side routing for navigation between pages.
+
+    ```json package.json
+    "react-router-dom": "^7.5.3"
+    ```
+
+    Used for implementing routes like `/productos`, `/admin`, `/contacto`, etc.
+  </Accordion>
+
+  <Accordion title="Bootstrap & React Bootstrap">
+    UI framework and React components for responsive design.
+
+    ```json package.json
+    "bootstrap": "^5.3.7",
+    "react-bootstrap": "^2.10.10",
+    "@popperjs/core": "^2.11.8"
+    ```
+
+    Bootstrap is used primarily for pagination and responsive layout components.
+  </Accordion>
+
+  <Accordion title="React Toastify (^11.0.5)">
+    Toast notifications for user feedback.
+
+    ```json package.json
+    "react-toastify": "^11.0.5"
+    ```
+
+    Displays notifications when products are added to the cart.
+  </Accordion>
+
+  <Accordion title="SweetAlert2 (^11.22.2)">
+    Beautiful, responsive popup boxes for confirmations.
+
+    ```json package.json
+    "sweetalert2": "^11.22.2"
+    ```
+
+    Used for delete confirmations in the admin panel.
+  </Accordion>
+
+  <Accordion title="React Icons (^5.5.0)">
+    Icon library with popular icon sets.
+
+    ```json package.json
+    "react-icons": "^5.5.0"
+    ```
+
+    Provides icons for UI elements throughout the application.
+  </Accordion>
+</AccordionGroup>
+
+### Development dependencies
+
+<AccordionGroup>
+  <Accordion title="Vite (^6.3.1)">
+    Next-generation frontend build tool.
+
+    ```json package.json
+    "vite": "^6.3.1",
+    "@vitejs/plugin-react": "^4.3.4"
+    ```
+
+    Provides fast HMR (Hot Module Replacement) and optimized builds.
+  </Accordion>
+
+  <Accordion title="ESLint">
+    Code quality and consistency tool.
+
+    ```json package.json
+    "eslint": "^9.22.0",
+    "@eslint/js": "^9.22.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.19"
+    ```
+
+    Ensures code quality with React-specific rules.
+  </Accordion>
+
+  <Accordion title="TypeScript types">
+    Type definitions for development.
+
+    ```json package.json
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4"
+    ```
+
+    Provides TypeScript definitions for better IDE support.
+  </Accordion>
+</AccordionGroup>
+
+## Configuration files
+
+### Vite configuration
+
+The project uses Vite as its build tool. The configuration is minimal:
+
+```javascript vite.config.js
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [react()],
+})
+```
+
+<Note>
+  Vite automatically handles JSX transformation and module bundling. No additional configuration is needed for basic usage.
+</Note>
+
+### ESLint configuration
+
+The project includes ESLint for code quality:
+
+```javascript eslint.config.js
+import js from '@eslint/js'
+import globals from 'globals'
+import reactHooks from 'eslint-plugin-react-hooks'
+import reactRefresh from 'eslint-plugin-react-refresh'
+
+export default [
+  { ignores: ['dist'] },
+  {
+    files: ['**/*.{js,jsx}'],
+    languageOptions: {
+      ecmaVersion: 2020,
+      globals: globals.browser,
+      parserOptions: {
+        ecmaVersion: 'latest',
+        ecmaFeatures: { jsx: true },
+        sourceType: 'module',
+      },
+    },
+    plugins: {
+      'react-hooks': reactHooks,
+      'react-refresh': reactRefresh,
+    },
+    rules: {
+      ...js.configs.recommended.rules,
+      ...reactHooks.configs.recommended.rules,
+      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+      'react-refresh/only-export-components': [
+        'warn',
+        { allowConstantExport: true },
+      ],
+    },
+  },
+]
+```
+
+## Environment setup
+
+### No environment variables required
+
+Tienda ETCA does not require environment variables for basic operation. The application uses a hardcoded MockAPI endpoint:
+
+```javascript src/context/CartContext.jsx
+fetch(
+    "https://681cdce3f74de1d219ae0bdb.mockapi.io/tiendatobe/productos"
+)
+```
+
+<Warning>
+  For production use, consider moving API endpoints to environment variables for better security and flexibility.
+</Warning>
+
+### Optional: Creating environment variables
+
+If you want to use environment variables in the future:
+
+<Steps>
+  <Step title="Create .env file">
+    Create a `.env` file in the project root:
+
+    ```bash
+    touch .env
+    ```
+  </Step>
+
+  <Step title="Add variables">
+    Add your environment variables with the `VITE_` prefix:
+
+    ```bash .env
+    VITE_API_URL=https://681cdce3f74de1d219ae0bdb.mockapi.io/tiendatobe
+    VITE_APP_NAME=Tienda ETCA
+    ```
+
+    <Info>
+      Vite requires environment variables to be prefixed with `VITE_` to be exposed to the client.
+    </Info>
+  </Step>
+
+  <Step title="Access in code">
+    Access environment variables using `import.meta.env`:
+
+    ```javascript
+    const apiUrl = import.meta.env.VITE_API_URL
+    fetch(`${apiUrl}/productos`)
+    ```
+  </Step>
+</Steps>
+
+## Project structure
+
+After installation, your project structure will look like this:
+
+```plaintext
+tienda-etca/
+├── node_modules/          # Installed dependencies
+├── public/                # Static assets
+│   ├── data/             # JSON data files
+│   └── _redirects        # Hosting redirects
+├── src/                   # Source code
+│   ├── assets/           # Images and graphics
+│   ├── auth/             # Protected route logic
+│   ├── components/       # Reusable components
+│   │   └── style/       # Component styles
+│   ├── context/          # Global contexts (cart, auth, admin)
+│   ├── layout/           # Page layouts
+│   ├── App.jsx           # Main app component
+│   ├── App.css           # Global styles
+│   ├── main.jsx          # Entry point
+│   └── index.css         # Base styles
+├── .gitignore            # Git ignore rules
+├── eslint.config.js      # ESLint configuration
+├── index.html            # HTML template
+├── package.json          # Dependencies and scripts
+├── package-lock.json     # Dependency lock file
+└── vite.config.js        # Vite configuration
+```
+
+## Build for production
+
+To create an optimized production build:
+
+```bash
+npm run build
+```
+
+This creates a `dist` folder with optimized assets:
+
+- Minified JavaScript bundles
+- Optimized CSS
+- Compressed assets
+- Source maps for debugging
+
+### Preview production build
+
+Test the production build locally:
+
+```bash
+npm run preview
+```
+
+<Note>
+  The preview server runs the production build locally, allowing you to test before deploying.
+</Note>
+
+## Troubleshooting
+
+### Common installation issues
+
+<AccordionGroup>
+  <Accordion title="npm install fails">
+    Try clearing the npm cache and reinstalling:
+
+    ```bash
+    npm cache clean --force
+    rm -rf node_modules package-lock.json
+    npm install
+    ```
+  </Accordion>
+
+  <Accordion title="Port 5173 already in use">
+    Either stop the process using port 5173 or specify a different port:
+
+    ```bash
+    npm run dev -- --port 3000
+    ```
+  </Accordion>
+
+  <Accordion title="ESLint errors on start">
+    Fix linting issues before running:
+
+    ```bash
+    npm run lint
+    ```
+
+    Then fix any reported issues or use `npm run dev` to run anyway.
+  </Accordion>
+
+  <Accordion title="Module not found errors">
+    Ensure all dependencies are installed:
+
+    ```bash
+    npm install
+    ```
+
+    If the error persists, delete `node_modules` and reinstall.
+  </Accordion>
+</AccordionGroup>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Quickstart guide" icon="rocket" href="/quickstart">
+    Get up and running quickly with basic usage
+  </Card>
+  <Card title="Project structure" icon="folder-tree" href="/development/project-structure">
+    Learn about the codebase organization
+  </Card>
+  <Card title="Context API" icon="share-nodes" href="/development/context/cart-context">
+    Understand global state management
+  </Card>
+  <Card title="Deployment" icon="cloud" href="/development/deployment/setup">
+    Deploy your application to production
+  </Card>
+</CardGroup>

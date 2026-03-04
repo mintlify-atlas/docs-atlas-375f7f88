@@ -1,0 +1,277 @@
+---
+title: 'Notifications'
+description: 'Toast notifications with React Toastify and visual alerts with SweetAlert2'
+---
+
+## Overview
+
+Tienda ETCA uses two notification systems to provide user feedback:
+- **React Toastify**: Lightweight toast notifications for cart operations
+- **SweetAlert2**: Rich modal dialogs for admin actions and confirmations
+
+## React Toastify
+
+Toast notifications are used in `CartContext` for non-intrusive feedback during shopping operations.
+
+### Implementation
+
+Import toast from React Toastify in `~/workspace/source/src/context/CartContext.jsx:2`:
+
+```jsx
+import { toast } from 'react-toastify';
+```
+
+### Adding Products to Cart
+
+When a product is added to the cart, the system shows different messages based on whether the product already exists:
+
+```jsx
+const handleAddToCart = (product) => {
+  const productExist = cart.find((item) => item.id === product.id);
+
+  if (productExist) {
+    setCart(
+      cart.map((item) =>
+        item.id === product.id
+          ? { ...item, cantidad: item.cantidad + 1 }
+          : item
+      )
+    );
+    toast.info(`Cantidad aumentada para "${product.nombre}"`);
+  } else {
+    setCart([...cart, product]);
+    toast.success(`"${product.nombre}" agregado al carrito`);
+  }
+};
+```
+
+<Info>
+The toast automatically displays the product name in the notification message for better user feedback.
+</Info>
+
+### Toast Types
+
+Tienda ETCA uses two toast notification types:
+
+<CardGroup cols={2}>
+  <Card title="Success Toast" icon="circle-check">
+    Used when a new product is added to cart
+    ```jsx
+    toast.success(`"${product.nombre}" agregado al carrito`);
+    ```
+  </Card>
+  
+  <Card title="Info Toast" icon="circle-info">
+    Used when quantity is increased for existing product
+    ```jsx
+    toast.info(`Cantidad aumentada para "${product.nombre}"`);
+    ```
+  </Card>
+</CardGroup>
+
+### Usage Example
+
+```jsx
+import { useContext } from 'react';
+import { CartContext } from '../context/CartContext';
+
+function ProductCard({ product }) {
+  const { handleAddToCart } = useContext(CartContext);
+  
+  return (
+    <button onClick={() => handleAddToCart(product)}>
+      Add to Cart
+    </button>
+  );
+}
+```
+
+## SweetAlert2
+
+SweetAlert2 provides rich modal dialogs for critical admin operations that require user confirmation.
+
+### Implementation
+
+Imported in `AdminContext` at `~/workspace/source/src/context/AdminContext.jsx:2`:
+
+```jsx
+import Swal from 'sweetalert2'
+```
+
+### Success Notifications
+
+Used to confirm successful operations:
+
+#### Product Added
+
+```jsx
+const agregarProducto = async (producto) => {
+  try {
+    const respuesta = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(producto)
+    })
+    if (!respuesta.ok) {
+      throw new Error('Error al agregar producto')
+    }
+    const data = await respuesta.json()
+    Swal.fire({
+      title: "Realizado!",
+      text: "Producto agregado correctamente!",
+      icon: "success"
+    });
+    cargarProductos()
+  } catch (error) {
+    console.log(error.message);
+  }
+}
+```
+
+#### Product Updated
+
+```jsx
+Swal.fire({
+  title: "Realizado!",
+  text: "Producto actualizado correctamente!",
+  icon: "success"
+});
+```
+
+### Confirmation Dialogs
+
+For destructive actions, SweetAlert2 shows a confirmation dialog before proceeding:
+
+```jsx
+const eliminarProducto = async (id) => {
+  const result = await Swal.fire({
+    title: '¿Estás seguro de eliminar el producto?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Sí, eliminar',
+    cancelButtonText: 'Cancelar',
+  });
+
+  if (result.isConfirmed) {
+    try {
+      const respuesta = await fetch(
+        `https://681cdce3f74de1d219ae0bdb.mockapi.io/tiendatobe/productos/${id}`, 
+        { method: 'DELETE' }
+      );
+      if (!respuesta.ok) throw new Error('Error al eliminar');
+
+      Swal.fire({
+        title: "Realizado!",
+        text: "Producto eliminado correctamente!",
+        icon: "success",
+      });
+
+      cargarProductos();
+    } catch (error) {
+      Swal.fire({
+        title: "Error!",
+        text: "Hubo un problema al eliminar el producto!",
+        icon: "error"
+      });
+    }
+  }
+}
+```
+
+<Warning>
+The confirmation dialog prevents accidental deletions by requiring explicit user confirmation.
+</Warning>
+
+### Alert Types
+
+SweetAlert2 is used with multiple icon types:
+
+<Tabs>
+  <Tab title="Success">
+    ```jsx
+    Swal.fire({
+      title: "Realizado!",
+      text: "Producto agregado correctamente!",
+      icon: "success"
+    });
+    ```
+  </Tab>
+  
+  <Tab title="Warning">
+    ```jsx
+    Swal.fire({
+      title: '¿Estás seguro de eliminar el producto?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+    });
+    ```
+  </Tab>
+  
+  <Tab title="Error">
+    ```jsx
+    Swal.fire({
+      title: "Error!",
+      text: "Hubo un problema al eliminar el producto!",
+      icon: "error"
+    });
+    ```
+  </Tab>
+</Tabs>
+
+## Notification Comparison
+
+<CardGroup cols={2}>
+  <Card title="React Toastify" icon="bell">
+    **Best for:**
+    - Non-blocking notifications
+    - Cart operations
+    - Quick feedback
+    - Multiple simultaneous messages
+    
+    **Location:** `CartContext.jsx`
+  </Card>
+  
+  <Card title="SweetAlert2" icon="triangle-exclamation">
+    **Best for:**
+    - Confirmation dialogs
+    - Destructive actions
+    - Admin operations
+    - Detailed error messages
+    
+    **Location:** `AdminContext.jsx`
+  </Card>
+</CardGroup>
+
+## Best Practices
+
+<Steps>
+  <Step title="Choose the Right Notification Type">
+    Use toasts for informational messages and SweetAlert2 for actions requiring user confirmation.
+  </Step>
+  
+  <Step title="Include Contextual Information">
+    Always include the product name or relevant details in notification messages.
+    ```jsx
+    toast.success(`"${product.nombre}" agregado al carrito`);
+    ```
+  </Step>
+  
+  <Step title="Handle Errors Gracefully">
+    Show error notifications when operations fail to keep users informed.
+    ```jsx
+    Swal.fire({
+      title: "Error!",
+      text: "Hubo un problema al eliminar el producto!",
+      icon: "error"
+    });
+    ```
+  </Step>
+</Steps>
+
+<Note>
+Both notification systems are already configured and available through their respective contexts (CartContext and AdminContext).
+</Note>

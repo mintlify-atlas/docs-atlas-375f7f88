@@ -1,0 +1,317 @@
+---
+title: Project Structure
+description: Detailed overview of the Tienda ETCA project file organization and directory structure
+---
+
+## Directory Overview
+
+Tienda ETCA follows a standard React application structure with clear separation of concerns. The source code is organized into logical directories based on functionality.
+
+## Source Directory Structure
+
+```
+src/
+├── assets/          # Static assets (images, icons)
+├── auth/            # Authentication and authorization components
+├── components/      # Reusable UI components
+│   └── style/      # Component-specific CSS modules
+├── context/         # React Context providers for state management
+├── layout/          # Page-level layout components
+├── App.jsx          # Main application component with routing
+├── main.jsx         # Application entry point
+├── App.css          # Global application styles
+└── index.css        # Root CSS styles
+```
+
+## Detailed Directory Breakdown
+
+<AccordionGroup>
+  <Accordion title="/src/assets/ - Static Assets">
+    Contains all static assets including images, icons, and media files.
+    
+    **Files:**
+    - `ETCAicon150.png` (13.5 KB) - ETCA logo/icon
+    - `arquero002a.webp` (185 KB) - Archer image
+    - `loading.gif` (1.4 MB) - Loading animation
+    - `pinesETCA.jpg` (490 KB) - ETCA location image
+    - `react.svg` (4.1 KB) - React logo
+    - `tresArquerosBochin.jpg` (138 KB) - Three archers image
+    
+    **Usage:** Imported directly in components using relative paths or Vite's asset handling.
+  </Accordion>
+
+  <Accordion title="/src/auth/ - Authentication">
+    Contains authentication and authorization logic.
+    
+    **Files:**
+    - `RutaProtegida.jsx` (15 lines) - Protected route wrapper component
+    
+    **Purpose:**
+    - Implements role-based access control
+    - Redirects unauthorized users
+    - Wraps protected routes (e.g., admin panel)
+    
+    **Example:**
+    ```jsx
+    <RutaProtegida 
+      isAuthenticated={isAuthenticated} 
+      requeridRole='admin' 
+      role={role}
+    >
+      <Admin />
+    </RutaProtegida>
+    ```
+  </Accordion>
+
+  <Accordion title="/src/components/ - UI Components">
+    Reusable components used throughout the application.
+    
+    **Component Files:**
+    - `Cart.jsx` (126 lines) - Shopping cart modal with items list
+    - `Equipo.jsx` (29 lines) - Team/staff display component
+    - `Footer.jsx` (49 lines) - Site footer with links and info
+    - `Formulario.jsx` (55 lines) - Contact form component
+    - `FormularioEdicion.jsx` (135 lines) - Product edit form for admin
+    - `FormularioProducto.jsx` (106 lines) - New product creation form
+    - `Header.jsx` (44 lines) - Navigation header with cart icon
+    - `ListaUsuarios.jsx` (37 lines) - User management list
+    - `Main.jsx` (29 lines) - Main content section component
+    - `Main2.jsx` (29 lines) - Alternative main section
+    - `NotFound.jsx` (28 lines) - 404 error page
+    - `Product.jsx` (33 lines) - Individual product card
+    - `ProductList.jsx` (75 lines) - Product grid/list display
+    
+    **Style Files:**
+    - `style/Footer.css` - Footer component styles
+    - `style/Header.css` - Header component styles
+    - `style/Modal.css` - Modal component styles
+    - `style/NotFound.css` - 404 page styles
+    - `style/Product.css` - Product card styles
+  </Accordion>
+
+  <Accordion title="/src/context/ - State Management">
+    React Context providers for global state management.
+    
+    **Files:**
+    - `AdminContext.jsx` (135 lines) - Admin operations and product management
+    - `AuthContext.jsx` (82 lines) - Authentication and user session
+    - `CartContext.jsx` (94 lines) - Shopping cart and product data
+    
+    **Context Hierarchy:**
+    ```
+    AuthProvider (outermost)
+    └── CartProvider
+        └── AdminProvider (innermost)
+    ```
+    
+    **Key Responsibilities:**
+    
+    | Context | State Managed | API Calls |
+    |---------|--------------|----------|
+    | AuthContext | Authentication, user role, login form | users.json |
+    | CartContext | Cart items, products, search | GET products |
+    | AdminContext | Product CRUD, modals | POST/PUT/DELETE products |
+  </Accordion>
+
+  <Accordion title="/src/layout/ - Page Layouts">
+    Full-page layout components representing application routes.
+    
+    **Files:**
+    - `AcercaDe.jsx` (70 lines) - About page (/acercade)
+    - `Admin.jsx` (69 lines) - Admin dashboard (/admin)
+    - `Contacto.jsx` (36 lines) - Contact page (/contacto)
+    - `DetallesProductos.jsx` (47 lines) - Product detail page (/productos/:id)
+    - `GaleriaProductos.jsx` (32 lines) - Product gallery (/productos)
+    - `Home.jsx` (50 lines) - Homepage (/)
+    - `Login.jsx` (54 lines) - Login page (/login)
+    - `layoutMain.css` - Shared layout styles
+    
+    **Route Mapping:**
+    ```jsx
+    / → Home
+    /productos → GaleriaProductos
+    /productos/:id → DetallesProductos
+    /acercade → AcercaDe
+    /contacto → Contacto
+    /login → Login
+    /admin → Admin (protected)
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## Root Files
+
+### Application Entry Point
+
+<CodeGroup>
+```jsx main.jsx
+// ~/workspace/source/src/main.jsx
+// Initializes React app with provider hierarchy
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+import { BrowserRouter as Router } from 'react-router-dom'
+import { AuthProvider } from './context/AuthContext.jsx'
+import { CartProvider } from './context/CartContext.jsx'
+import { AdminProvider } from './context/AdminContext.jsx'
+import App from './App.jsx'
+
+createRoot(document.getElementById('root')).render(
+  <StrictMode>
+    <Router>
+      <AuthProvider>
+        <CartProvider>
+          <AdminProvider>
+            <App />
+          </AdminProvider>
+        </CartProvider>
+      </AuthProvider>
+    </Router>
+  </StrictMode>,
+)
+```
+
+```jsx App.jsx
+// ~/workspace/source/src/App.jsx
+// Main routing configuration
+import { Routes, Route } from "react-router-dom";
+import { useAuth } from "./context/AuthContext";
+import { ToastContainer } from 'react-toastify';
+import RutaProtegida from "./auth/RutaProtegida";
+// ... route components
+
+function App() {
+  const {isAuthenticated, role} = useAuth()
+  
+  return (
+    <>
+      <Routes>
+        <Route path="/" element={<Home/>}/>
+        <Route path="/productos" element={<GaleriaProductos/>}/>
+        {/* ... more routes */}
+      </Routes>
+      <ToastContainer />
+    </>
+  );
+}
+```
+</CodeGroup>
+
+### Styling Files
+
+- **index.css** - Global CSS reset and base styles
+- **App.css** - Application-level styling
+- **Component-specific CSS** - Located in `components/style/`
+
+## File Naming Conventions
+
+<CardGroup cols={2}>
+  <Card title="Components" icon="react">
+    PascalCase: `ProductList.jsx`, `Header.jsx`
+  </Card>
+  <Card title="Contexts" icon="share-nodes">
+    PascalCase with Context suffix: `CartContext.jsx`
+  </Card>
+  <Card title="Styles" icon="palette">
+    PascalCase matching component: `Header.css`
+  </Card>
+  <Card title="Assets" icon="image">
+    camelCase or descriptive: `pinesETCA.jpg`
+  </Card>
+</CardGroup>
+
+## Component Size Distribution
+
+Here's a breakdown of component complexity by line count:
+
+| Category | Component | Lines | Purpose |
+|----------|-----------|-------|----------|
+| **Large** | FormularioEdicion.jsx | 135 | Complex edit form with validation |
+| | AdminContext.jsx | 135 | Full CRUD operations |
+| | Cart.jsx | 126 | Cart UI with item management |
+| **Medium** | FormularioProducto.jsx | 106 | New product form |
+| | CartContext.jsx | 94 | Cart state + API |
+| | AuthContext.jsx | 82 | Authentication logic |
+| | ProductList.jsx | 75 | Product grid rendering |
+| **Small** | Most layout components | 30-70 | Page structure |
+| | UI components | 20-50 | Focused functionality |
+
+## Import Patterns
+
+### Context Usage
+```jsx
+import { useAuth } from './context/AuthContext';
+import { useContext } from 'react';
+import { CartContext } from './context/CartContext';
+
+const { isAuthenticated, role } = useAuth();
+const { cart, handleAddToCart } = useContext(CartContext);
+```
+
+### Component Imports
+```jsx
+import Header from './components/Header';
+import Footer from './components/Footer';
+import ProductList from './components/ProductList';
+```
+
+### Asset Imports
+```jsx
+import logo from './assets/ETCAicon150.png';
+import loading from './assets/loading.gif';
+```
+
+## Build Configuration
+
+The project uses Vite as the build tool. Key configuration details:
+
+- **Entry Point:** `src/main.jsx`
+- **Build Tool:** Vite 6.3.1
+- **Plugin:** @vitejs/plugin-react 4.3.4
+- **Output:** Optimized production bundle
+
+## Development Workflow
+
+<Steps>
+  <Step title="Development Server">
+    Run `npm run dev` to start Vite dev server with hot reload
+  </Step>
+  <Step title="Component Development">
+    Create components in appropriate directory (components/, layout/, etc.)
+  </Step>
+  <Step title="Context Integration">
+    Use existing contexts or create new ones in context/ directory
+  </Step>
+  <Step title="Routing">
+    Add routes in App.jsx, create layout components for pages
+  </Step>
+  <Step title="Build">
+    Run `npm run build` for production-optimized bundle
+  </Step>
+</Steps>
+
+## Best Practices
+
+<Warning>
+  **Component Organization**
+  - Keep components focused and single-responsibility
+  - Use layout/ for full pages, components/ for reusable UI
+  - Co-locate styles with components when possible
+</Warning>
+
+<Tip>
+  **Context Usage**
+  - Use useContext hook or custom hooks (like useAuth)
+  - Keep context logic separate from UI components
+  - Organize related state in same context
+</Tip>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Architecture" icon="sitemap" href="/development/architecture">
+    Learn about the application architecture
+  </Card>
+  <Card title="Technologies" icon="layer-group" href="/development/technologies">
+    Explore the tech stack details
+  </Card>
+</CardGroup>

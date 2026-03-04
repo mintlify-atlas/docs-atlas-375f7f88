@@ -1,0 +1,164 @@
+---
+title: Browsing Products
+description: Learn how to browse, search, and filter products in the Tienda ETCA catalog
+---
+
+The product gallery is the main hub for discovering archery equipment and accessories at Tienda ETCA. This page guides you through browsing the catalog and finding the products you need.
+
+## Accessing the Product Gallery
+
+The product catalog is available on the main gallery page (`GaleriaProductos`). When you first visit the page, products are loaded from the server with a brief loading animation to ensure all product information is ready.
+
+<Note>
+Products are fetched from a remote API. If you see a loading indicator, please wait a moment while the catalog loads.
+</Note>
+
+## Product Display
+
+Products are displayed in a grid layout, with each product card showing:
+
+- **Product Image**: A visual representation of the item
+- **Product Name**: The title of the product
+- **Price**: Displayed in dollars (e.g., $45.99)
+- **Stock Availability**: Shows the current stock level
+- **Action Buttons**: 
+  - "Agregar" (Add) - Adds the item to your shopping cart
+  - "Ver detalles" (View Details) - Opens the detailed product page
+
+### Product Card Layout
+
+Each product in the gallery follows this structure:
+
+```jsx
+// Reference: ~/workspace/source/src/components/Product.jsx:12-29
+<section className="product">
+  <div className="fondoProducto">
+    <img src={product.imagen} alt={product.nombre} />
+  </div>
+  <h3>{product.nombre}</h3>
+  <p>${product.precio}</p>
+  <p>Stock: {product.stock}</p>
+  <button>Agregar</button>
+  <Link to={`/productos/${product.id}`}>Ver detalles</Link>
+</section>
+```
+
+## Search Functionality
+
+The product gallery includes a powerful search feature that helps you quickly find specific items.
+
+### How to Search
+
+1. Locate the search input at the top of the product gallery
+2. Type your search term in the "Buscar productos..." field
+3. Results filter automatically as you type
+4. The search is **case-insensitive** and matches product names
+
+<Tip>
+The search feature performs real-time filtering. You don't need to press Enter - just start typing and watch the results update instantly.
+</Tip>
+
+### Search Implementation
+
+The search filters products based on their name:
+
+```jsx
+// Reference: ~/workspace/source/src/context/CartContext.jsx:15
+const productosFiltrados = productos.filter((producto) => 
+  producto?.nombre.toLowerCase().includes(busqueda.toLowerCase())
+)
+```
+
+## Pagination
+
+To make browsing easier, products are divided into pages with **5 items per page**.
+
+### Navigating Pages
+
+The pagination controls appear at the bottom of the product list:
+
+- **Previous Button**: Go to the previous page (disabled on page 1)
+- **Page Numbers**: Click any page number to jump directly to that page
+- **Next Button**: Advance to the next page (disabled on the last page)
+- **Active Page**: The current page is highlighted
+
+<Info>
+When you change pages, the view automatically scrolls to the top of the gallery for easier navigation.
+</Info>
+
+### Pagination Details
+
+```jsx
+// Reference: ~/workspace/source/src/components/ProductList.jsx:10-15
+const itemsPerPage = 5
+const indexOfLast = currentPage * itemsPerPage
+const indexOfFirst = indexOfLast - itemsPerPage
+const currentProducts = productosFiltrados.slice(indexOfFirst, indexOfLast)
+const totalPages = Math.ceil(productosFiltrados.length / itemsPerPage)
+```
+
+## Adding Products to Cart
+
+Directly from the product gallery, you can add items to your cart:
+
+1. Find the product you want
+2. Click the **"Agregar"** button on the product card
+3. A toast notification confirms the item was added
+4. If the item is already in your cart, the quantity increases by 1
+
+<Warning>
+Make sure to check the stock availability before adding items. The stock count is displayed on each product card.
+</Warning>
+
+## Viewing Product Details
+
+For more information about a specific product:
+
+1. Click the **"Ver detalles"** link on any product card
+2. You'll be taken to the dedicated product details page
+3. See the full description, category, and larger images
+
+Learn more in the [Product Details](/user-guide/product-details) guide.
+
+## Loading States
+
+The gallery handles several states to provide a smooth experience:
+
+- **Loading**: Displays a loading animation while products are being fetched
+- **Error**: Shows an error message if products cannot be loaded
+- **Empty Results**: If your search returns no matches, the gallery will be empty
+
+```jsx
+// Reference: ~/workspace/source/src/layout/GaleriaProductos.jsx:17-23
+{carga ? (
+  <img src={loading} alt='loading' />
+) : (
+  <ProductList />
+)}
+```
+
+## Best Practices
+
+<CardGroup cols={2}>
+  <Card title="Use Search First" icon="magnifying-glass">
+    If you know what you're looking for, use the search feature to quickly narrow down results before browsing.
+  </Card>
+  
+  <Card title="Check Stock Levels" icon="boxes-stacked">
+    Always verify the stock availability shown on each product card before adding items to your cart.
+  </Card>
+  
+  <Card title="View Details" icon="circle-info">
+    Click "Ver detalles" to see the complete product information, including category and full description.
+  </Card>
+  
+  <Card title="Browse by Page" icon="list">
+    Use pagination controls to systematically browse all available products without overwhelming your screen.
+  </Card>
+</CardGroup>
+
+## Related Features
+
+- [Shopping Cart](/user-guide/shopping-cart) - Manage items you've added
+- [Product Details](/user-guide/product-details) - View detailed product information
+- [Contact](/user-guide/contact) - Reach out with questions about products

@@ -1,0 +1,720 @@
+---
+title: Form Components
+description: Documentation for form components including contact forms and product management forms
+---
+
+# Form Components
+
+Tienda ETCA includes three main form components for user interaction and product management. These forms handle contact submissions, product creation, and product editing.
+
+## Overview
+
+<CardGroup cols={3}>
+  <Card title="Formulario" icon="envelope">
+    Contact form for user inquiries
+  </Card>
+  <Card title="FormularioProducto" icon="plus-circle">
+    Add new products to catalog
+  </Card>
+  <Card title="FormularioEdicion" icon="pen-to-square">
+    Edit existing product details
+  </Card>
+</CardGroup>
+
+---
+
+## Formulario (Contact Form)
+
+A simple contact form for user inquiries and messages.
+
+**File:** `src/components/Formulario.jsx`
+
+### Overview
+
+The contact form collects basic user information including name, email, and message. It uses Bootstrap styling for a clean, responsive design.
+
+### Component Structure
+
+```jsx Formulario.jsx
+import React, { useState } from 'react';
+import 'bootstrap/dist/css/bootstrap.min.css';
+
+export default function Formulario() {
+  const [nombre, setNombre] = useState('');
+  const [mensaje, setMensaje] = useState('');
+  const [mail, setMail] = useState('');
+
+  function manejarEnvio(evento) {
+    evento.preventDefault();
+    alert(`Formulario enviado por: ${nombre}`);
+  }
+
+  return (
+    <form className="container my-4" onSubmit={manejarEnvio}>
+      <div className="row g-3">
+        <div className="col-md-4">
+          <input
+            type="text"
+            className="form-control"
+            value={nombre}
+            onChange={(e) => setNombre(e.target.value)}
+            placeholder="Nombre"
+            required
+          />
+        </div>
+        <div className="col-md-4">
+          <input
+            type="email"
+            className="form-control"
+            value={mail}
+            onChange={(e) => setMail(e.target.value)}
+            placeholder="Correo"
+            required
+          />
+        </div>
+        <div className="col-md-4">
+          <input
+            type="text"
+            className="form-control"
+            value={mensaje}
+            onChange={(e) => setMensaje(e.target.value)}
+            placeholder="Mensaje"
+            required
+          />
+        </div>
+        <div className="col-12 text-end">
+          <button type="submit" className="btn btn-primary">
+            Enviar
+          </button>
+        </div>
+      </div>
+    </form>
+  );
+}
+```
+
+### Features
+
+<AccordionGroup>
+  <Accordion title="Form Fields" icon="input-text">
+    Three input fields arranged in a responsive grid:
+    
+    - **Nombre** - User's name (text input, required)
+    - **Correo** - Email address (email input, required)
+    - **Mensaje** - User's message (text input, required)
+    
+    All fields use Bootstrap's `form-control` class for consistent styling.
+  </Accordion>
+
+  <Accordion title="State Management" icon="database">
+    Uses React `useState` for controlled form inputs:
+    
+    ```jsx
+    const [nombre, setNombre] = useState('');
+    const [mensaje, setMensaje] = useState('');
+    const [mail, setMail] = useState('');
+    ```
+    
+    Each field's value is controlled by state and updates on change.
+  </Accordion>
+
+  <Accordion title="Form Submission" icon="paper-plane">
+    Handles form submission with basic alert:
+    
+    ```jsx
+    function manejarEnvio(evento) {
+      evento.preventDefault();
+      alert(`Formulario enviado por: ${nombre}`);
+    }
+    ```
+    
+    <Warning>
+      Currently displays an alert. In production, this should send data to a backend API.
+    </Warning>
+  </Accordion>
+
+  <Accordion title="Validation" icon="check-circle">
+    Uses HTML5 validation:
+    - All fields are `required`
+    - Email field uses `type="email"` for format validation
+    - Browser-native validation messages
+  </Accordion>
+</AccordionGroup>
+
+### Layout
+
+The form uses Bootstrap's grid system:
+
+- Three columns on medium screens and above (`col-md-4`)
+- Stacks vertically on smaller screens
+- Submit button aligned to the right
+
+### Usage Example
+
+```jsx In Contacto Layout
+import Formulario from '../components/Formulario';
+
+const Contacto = () => {
+  return (
+    <>
+      <Header />
+      <h1>Contacto</h1>
+      <Formulario />
+      <Footer />
+    </>
+  );
+};
+```
+
+---
+
+## FormularioProducto (Add Product Form)
+
+Modal form for adding new products to the catalog with validation.
+
+**File:** `src/components/FormularioProducto.jsx`
+
+### Overview
+
+A modal-based form that allows administrators to add new products. Includes comprehensive validation and error handling.
+
+### Component Structure
+
+```jsx FormularioProducto.jsx
+import React, { useState } from 'react';
+import './style/Modal.css';
+
+function FormularioProducto({ onAgregar, onClose }) {
+  const [producto, setProducto] = useState({
+    nombre: '',
+    precio: '',
+    descripcion: '',
+  });
+  const [errores, setErrores] = useState({});
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setProducto({ ...producto, [name]: value });
+  };
+
+  const validarFormulario = () => {
+    const nuevosErrores = {};
+    if (!producto.nombre.trim()) 
+      nuevosErrores.nombre = 'El nombre es obligatorio.';
+    if (!producto.precio || producto.precio <= 0) 
+      nuevosErrores.precio = 'El precio debe ser mayor a 0.';
+    if (!producto.descripcion.trim() || producto.descripcion.length < 10)
+      nuevosErrores.descripcion = 'La descripción debe tener al menos 10 caracteres.';
+    setErrores(nuevosErrores);
+    return Object.keys(nuevosErrores).length === 0;
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!validarFormulario()) return;
+    onAgregar(producto);
+    setProducto({ nombre: '', precio: '', descripcion: '' });
+    onClose();
+  };
+
+  return (
+    <div className="modal-overlay">
+      <div className="modal-content p-4 rounded" 
+           style={{ maxWidth: '500px', backgroundColor: 'white' }}>
+        <button
+          type="button"
+          className="btn-close float-end"
+          aria-label="Close"
+          onClick={onClose}
+        ></button>
+
+        <form onSubmit={handleSubmit} noValidate>
+          <h2 className="mb-4">Agregar Producto</h2>
+
+          <div className="mb-3">
+            <label htmlFor="nombre" className="form-label">Nombre:</label>
+            <input
+              type="text"
+              id="nombre"
+              name="nombre"
+              value={producto.nombre}
+              onChange={handleChange}
+              className={`form-control ${errores.nombre ? 'is-invalid' : ''}`}
+              required
+            />
+            {errores.nombre && 
+              <div className="invalid-feedback">{errores.nombre}</div>}
+          </div>
+
+          <div className="mb-3">
+            <label htmlFor="precio" className="form-label">Precio:</label>
+            <input
+              type="number"
+              id="precio"
+              name="precio"
+              value={producto.precio}
+              onChange={handleChange}
+              min="0"
+              className={`form-control ${errores.precio ? 'is-invalid' : ''}`}
+              required
+            />
+            {errores.precio && 
+              <div className="invalid-feedback">{errores.precio}</div>}
+          </div>
+
+          <div className="mb-3">
+            <label htmlFor="descripcion" className="form-label">Descripción:</label>
+            <textarea
+              id="descripcion"
+              name="descripcion"
+              value={producto.descripcion}
+              onChange={handleChange}
+              className={`form-control ${errores.descripcion ? 'is-invalid' : ''}`}
+              rows={3}
+              required
+            />
+            {errores.descripcion && 
+              <div className="invalid-feedback">{errores.descripcion}</div>}
+          </div>
+
+          <button type="submit" className="btn btn-primary w-100">
+            Agregar Producto
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+export default FormularioProducto;
+```
+
+### Props
+
+<ParamField path="onAgregar" type="function" required>
+  Callback function to handle product creation. Receives the product object as a parameter.
+  
+  ```jsx
+  onAgregar={(producto) => {
+    // Add product to database/state
+  }}
+  ```
+</ParamField>
+
+<ParamField path="onClose" type="function" required>
+  Callback function to close the modal.
+  
+  ```jsx
+  onClose={() => setOpen(false)}
+  ```
+</ParamField>
+
+### Features
+
+<AccordionGroup>
+  <Accordion title="Form Fields" icon="list">
+    Three fields for new product data:
+    
+    | Field | Type | Validation |
+    |-------|------|------------|
+    | Nombre | Text | Required, non-empty |
+    | Precio | Number | Required, must be > 0 |
+    | Descripción | Textarea | Required, min 10 characters |
+  </Accordion>
+
+  <Accordion title="Validation" icon="shield-check">
+    Custom validation with error messages:
+    
+    ```jsx
+    const validarFormulario = () => {
+      const nuevosErrores = {};
+      if (!producto.nombre.trim()) 
+        nuevosErrores.nombre = 'El nombre es obligatorio.';
+      if (!producto.precio || producto.precio <= 0) 
+        nuevosErrores.precio = 'El precio debe ser mayor a 0.';
+      if (!producto.descripcion.trim() || producto.descripcion.length < 10)
+        nuevosErrores.descripcion = 'La descripción debe tener al menos 10 caracteres.';
+      setErrores(nuevosErrores);
+      return Object.keys(nuevosErrores).length === 0;
+    };
+    ```
+    
+    **Validation Rules:**
+    - Name cannot be empty
+    - Price must be greater than 0
+    - Description must be at least 10 characters
+  </Accordion>
+
+  <Accordion title="Error Display" icon="triangle-exclamation">
+    Dynamic error feedback:
+    
+    - Error messages appear below invalid fields
+    - Uses Bootstrap's `is-invalid` class for styling
+    - Real-time validation on submit
+    - Clear error messages in Spanish
+  </Accordion>
+
+  <Accordion title="Modal Behavior" icon="window-maximize">
+    Modal overlay functionality:
+    
+    - Appears over main content
+    - Close button in top-right corner
+    - Backdrop overlay (`.modal-overlay`)
+    - Form resets on successful submission
+    - Modal closes after submission
+  </Accordion>
+</AccordionGroup>
+
+### State Management
+
+<CodeGroup>
+```jsx Product State
+const [producto, setProducto] = useState({
+  nombre: '',
+  precio: '',
+  descripcion: '',
+});
+```
+
+```jsx Error State
+const [errores, setErrores] = useState({});
+// Errors object structure:
+// {
+//   nombre: 'Error message',
+//   precio: 'Error message',
+//   descripcion: 'Error message'
+// }
+```
+</CodeGroup>
+
+### Usage Example
+
+```jsx In Admin Layout
+import FormularioProducto from '../components/FormularioProducto';
+import { useState } from 'react';
+
+const Admin = () => {
+  const [open, setOpen] = useState(false);
+  
+  const agregarProducto = (producto) => {
+    // Add product to database
+    console.log('Adding product:', producto);
+  };
+  
+  return (
+    <>
+      <button onClick={() => setOpen(true)}>
+        Agregar Producto
+      </button>
+      
+      {open && (
+        <FormularioProducto 
+          onAgregar={agregarProducto}
+          onClose={() => setOpen(false)}
+        />
+      )}
+    </>
+  );
+};
+```
+
+---
+
+## FormularioEdicion (Edit Product Form)
+
+Modal form for editing existing product information.
+
+**File:** `src/components/FormularioEdicion.jsx`
+
+### Overview
+
+A comprehensive form for editing product details, including all product attributes. Displayed in a modal overlay.
+
+### Component Structure
+
+```jsx FormularioEdicion.jsx (excerpt)
+import React, { useState, useEffect } from 'react';
+
+function FormularioEdicion({ productoSeleccionado, onActualizar, onClose }) {
+  const [producto, setProducto] = useState(productoSeleccionado);
+
+  useEffect(() => {
+    setProducto(productoSeleccionado);
+  }, [productoSeleccionado]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setProducto({ ...producto, [name]: value });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onActualizar(producto);
+    onClose();
+  };
+
+  return (
+    <div className="modal-overlay">
+      <div className="modal-content p-4 rounded" 
+           style={{ maxWidth: '600px', backgroundColor: 'white' }}>
+        <form onSubmit={handleSubmit} noValidate>
+          <h2 className="mb-4">Editar Producto</h2>
+          {/* Form fields */}
+          <button type="submit" className="btn btn-success w-100">
+            Actualizar Producto
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+```
+
+### Props
+
+<ParamField path="productoSeleccionado" type="object" required>
+  Product object to edit. Contains all product properties:
+  
+  ```jsx
+  {
+    id: 1,
+    nombre: 'Product name',
+    precio: 100,
+    stock: 10,
+    imagen: 'url',
+    categoria: 'category',
+    descripcion: 'description'
+  }
+  ```
+</ParamField>
+
+<ParamField path="onActualizar" type="function" required>
+  Callback function to handle product update. Receives updated product object.
+  
+  ```jsx
+  onActualizar={(producto) => {
+    // Update product in database/state
+  }}
+  ```
+</ParamField>
+
+<ParamField path="onClose" type="function" required>
+  Callback function to close the modal.
+  
+  ```jsx
+  onClose={() => setOpenEditor(false)}
+  ```
+</ParamField>
+
+### Form Fields
+
+<Tabs>
+  <Tab title="Product Info">
+    **Basic Product Information**
+    
+    - **ID** - Read-only product identifier
+    - **Nombre** - Product name (text, required)
+    - **Precio** - Product price (number, required, min: 0)
+    - **Stock** - Available stock (number, required)
+  </Tab>
+  <Tab title="Media & Category">
+    **Product Classification**
+    
+    - **Imagen** - Image URL (text, required)
+    - **Categoria** - Product category (text, required)
+  </Tab>
+  <Tab title="Description">
+    **Product Description**
+    
+    - **Descripción** - Detailed product description (textarea, 4 rows)
+    - Optional field for additional product details
+  </Tab>
+</Tabs>
+
+### Complete Field List
+
+| Field | Type | Attributes | Required |
+|-------|------|------------|----------|
+| ID | number | readonly | ✓ |
+| Nombre | text | - | ✓ |
+| Precio | number | min="0" | ✓ |
+| Stock | number | - | ✓ |
+| Imagen | text | URL | ✓ |
+| Categoría | text | - | ✓ |
+| Descripción | textarea | rows="4" | - |
+
+### Features
+
+<AccordionGroup>
+  <Accordion title="Dynamic Data Loading" icon="rotate">
+    Uses `useEffect` to update form when selected product changes:
+    
+    ```jsx
+    useEffect(() => {
+      setProducto(productoSeleccionado);
+    }, [productoSeleccionado]);
+    ```
+    
+    This ensures the form always displays the latest product data.
+  </Accordion>
+
+  <Accordion title="Controlled Inputs" icon="sliders">
+    All form fields are controlled components:
+    
+    ```jsx
+    <input
+      type="text"
+      name="nombre"
+      value={producto.nombre || ''}
+      onChange={handleChange}
+    />
+    ```
+    
+    Default empty strings prevent uncontrolled input warnings.
+  </Accordion>
+
+  <Accordion title="Form Submission" icon="floppy-disk">
+    Handles update and closes modal:
+    
+    ```jsx
+    const handleSubmit = (e) => {
+      e.preventDefault();
+      onActualizar(producto);
+      onClose();
+    };
+    ```
+  </Accordion>
+</AccordionGroup>
+
+### Usage Example
+
+```jsx In Admin Layout
+import FormularioEdicion from '../components/FormularioEdicion';
+import { useState } from 'react';
+
+const Admin = () => {
+  const [openEditor, setOpenEditor] = useState(false);
+  const [seleccionado, setSeleccionado] = useState(null);
+  
+  const actualizarProducto = (producto) => {
+    // Update product in database
+    console.log('Updating product:', producto);
+  };
+  
+  const handleEdit = (product) => {
+    setSeleccionado(product);
+    setOpenEditor(true);
+  };
+  
+  return (
+    <>
+      {productos.map(product => (
+        <div key={product.id}>
+          <button onClick={() => handleEdit(product)}>
+            Editar
+          </button>
+        </div>
+      ))}
+      
+      {openEditor && (
+        <FormularioEdicion 
+          productoSeleccionado={seleccionado}
+          onActualizar={actualizarProducto}
+          onClose={() => setOpenEditor(false)}
+        />
+      )}
+    </>
+  );
+};
+```
+
+---
+
+## Styling
+
+All form components use Bootstrap for base styling, with custom CSS for modal behavior.
+
+### CSS Files
+
+<CodeGroup>
+```css Modal.css (FormularioProducto & FormularioEdicion)
+/* Used for modal overlay and content */
+.modal-overlay {
+  /* Overlay styles */
+}
+
+.modal-content {
+  /* Modal content styles */
+}
+```
+
+```jsx Bootstrap Classes
+// Common Bootstrap classes used:
+- form-control
+- form-label
+- is-invalid
+- invalid-feedback
+- btn, btn-primary, btn-success
+- mb-3, mb-4 (margins)
+- p-4 (padding)
+- rounded, shadow
+```
+</CodeGroup>
+
+## Form Validation Summary
+
+<CardGroup cols={2}>
+  <Card title="Formulario" icon="circle-check">
+    **HTML5 Validation**
+    - Required fields
+    - Email format
+    - Browser-native messages
+  </Card>
+  <Card title="FormularioProducto" icon="shield-check">
+    **Custom Validation**
+    - Name: non-empty
+    - Price: greater than 0
+    - Description: min 10 chars
+    - Spanish error messages
+  </Card>
+  <Card title="FormularioEdicion" icon="check-double">
+    **Required Fields**
+    - All fields required except descripción
+    - Number validation for precio/stock
+    - No custom validation messages
+  </Card>
+</CardGroup>
+
+## Best Practices
+
+<Note>
+  **Form Submission**
+  
+  All forms use `e.preventDefault()` to prevent default browser form submission. This allows for custom handling of form data.
+</Note>
+
+<Tip>
+  **Controlled Components**
+  
+  All form inputs are controlled components, meaning their values are managed by React state. This provides better control and validation capabilities.
+</Tip>
+
+<Warning>
+  **Production Considerations**
+  
+  - Formulario currently uses `alert()` for feedback - implement proper backend integration
+  - Add loading states during form submission
+  - Implement proper error handling for API failures
+  - Consider adding CSRF protection for production
+</Warning>
+
+## Related Documentation
+
+<CardGroup cols={2}>
+  <Card title="Components Overview" icon="list" href="/development/components/overview">
+    See all available components
+  </Card>
+  <Card title="Admin Context" icon="database" href="/development/architecture/context">
+    Learn about product management state
+  </Card>
+</CardGroup>

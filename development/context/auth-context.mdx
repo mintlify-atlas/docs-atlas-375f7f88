@@ -1,0 +1,358 @@
+---
+title: 'AuthContext'
+description: 'Authentication and user session management for Tienda ETCA'
+---
+
+## Overview
+
+The `AuthContext` manages user authentication, login state, and role-based access control. It handles login/logout operations and persists authentication state to localStorage.
+
+**Source:** `~/workspace/source/src/context/AuthContext.jsx`
+
+## Setup
+
+Wrap your application with the `AuthProvider` (must be inside Router):
+
+```jsx
+import { BrowserRouter } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+
+function App() {
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        {/* Your app components */}
+      </AuthProvider>
+    </BrowserRouter>
+  );
+}
+```
+
+## Usage
+
+Use the `useAuth` custom hook to access authentication context:
+
+```jsx
+import { useAuth } from '../context/AuthContext';
+
+function MyComponent() {
+  const { isAuthenticated, role, handleSubmit } = useAuth();
+  
+  // Use auth methods and state
+}
+```
+
+## State Properties
+
+### isAuthenticated
+
+<ParamField path="isAuthenticated" type="boolean">
+  Whether a user is currently logged in. Synced with localStorage on mount.
+</ParamField>
+
+### role
+
+<ParamField path="role" type="string">
+  Current user's role. Either `'admin'` or `'cliente'`. Empty string when not authenticated.
+</ParamField>
+
+### email
+
+<ParamField path="email" type="string">
+  Email input value for the login form.
+</ParamField>
+
+### setEmail
+
+<ParamField path="setEmail" type="function">
+  Update the email input value.
+</ParamField>
+
+### password
+
+<ParamField path="password" type="string">
+  Password input value for the login form.
+</ParamField>
+
+### setPassword
+
+<ParamField path="setPassword" type="function">
+  Update the password input value.
+</ParamField>
+
+### errors
+
+<ParamField path="errors" type="object">
+  Validation and authentication error messages. Keys: `email`, `password`.
+</ParamField>
+
+```jsx
+// Example errors object
+{
+  email: "Email es requerido",
+  password: "Password es requerido"
+}
+
+// Or authentication error
+{
+  email: "credenciales invalidas"
+}
+```
+
+### setErrors
+
+<ParamField path="setErrors" type="function">
+  Update error messages. Useful for clearing errors.
+</ParamField>
+
+### setIsAuth
+
+<ParamField path="setIsAuth" type="function">
+  Manually set authentication state. Used for logout.
+</ParamField>
+
+## Methods
+
+### handleSubmit
+
+Processes login form submission, validates credentials, and redirects based on user role.
+
+<ParamField path="e" type="Event" required>
+  Form submit event. Will be prevented from default behavior.
+</ParamField>
+
+**Behavior:**
+1. Validates email and password are not empty
+2. Fetches user data from `data/users.json`
+3. Matches credentials against user database
+4. Sets authentication state and role
+5. Saves to localStorage: `isAuth` and `role`
+6. Redirects:
+   - Admin users → `/admin`
+   - Regular users → `/`
+
+**Validation Errors:**
+- Empty email: `"Email es requerido"`
+- Empty password: `"Password es requerido"`
+- Invalid credentials: `"credenciales invalidas"`
+- Server error: `"Algo salió mal. Por favor, inténtalo de nuevo más tarde."`
+
+**Example:**
+
+```jsx src/layout/Login.jsx
+import { useAuth } from '../context/AuthContext';
+import { Link } from 'react-router-dom';
+
+const Login = () => {
+  const { errors, email, setEmail, password, setPassword, handleSubmit } = useAuth();
+
+  return (
+    <div className="container my-5" style={{ maxWidth: '400px' }}>
+      <form onSubmit={handleSubmit} noValidate>
+        <h2 className="text-center mb-4">Iniciar Sesión</h2>
+
+        <div className="mb-3">
+          <label htmlFor="formBasicEmail" className="form-label">
+            Email
+          </label>
+          <input
+            id="formBasicEmail"
+            type="email"
+            placeholder="Ingrese su email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className={`form-control ${errors.email ? 'is-invalid' : ''}`}
+          />
+          {errors.email && <div className="invalid-feedback">{errors.email}</div>}
+        </div>
+
+        <div className="mb-3">
+          <label htmlFor="formBasicPassword" className="form-label">
+            Contraseña
+          </label>
+          <input
+            id="formBasicPassword"
+            type="password"
+            placeholder="Ingrese su contraseña"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className={`form-control ${errors.password ? 'is-invalid' : ''}`}
+          />
+          {errors.password && <div className="invalid-feedback">{errors.password}</div>}
+        </div>
+
+        <button type="submit" className="btn btn-primary w-100">
+          Enviar
+        </button>
+
+        <p className="text-center mt-3">
+          <Link to="/" className="text-primary">← Volver al inicio.</Link>
+        </p>
+      </form>
+    </div>
+  );
+};
+
+export default Login;
+```
+
+## Authentication Flow
+
+### Login Process
+
+1. User enters email and password
+2. Form submission calls `handleSubmit(e)`
+3. Client-side validation checks for empty fields
+4. Fetches user database from `data/users.json`
+5. Searches for matching email and password
+6. On success:
+   - Sets `isAuthenticated = true`
+   - Sets `role` based on user data
+   - Saves to localStorage
+   - Navigates to appropriate route
+7. On failure:
+   - Sets error message
+   - User remains on login page
+
+### Auto-Login on Mount
+
+The context checks localStorage on mount:
+
+```jsx
+useEffect(() => {
+  const isAuthenticated = localStorage.getItem('isAuth') === 'true'
+  const userRole = localStorage.getItem('role') || '';
+
+  if (isAuthenticated && userRole === 'admin') {
+    setIsAuth(true)
+    setRole(userRole)
+    navigate('/admin')
+  }
+  else if (isAuthenticated && userRole === 'cliente') {
+    setIsAuth(true)
+    setRole(userRole)
+    navigate('/')
+  }
+}, [])
+```
+
+This enables persistent sessions across page refreshes.
+
+### Logout Implementation
+
+To implement logout, clear localStorage and reset auth state:
+
+```jsx
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
+
+function LogoutButton() {
+  const { setIsAuth } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem('isAuth');
+    localStorage.removeItem('role');
+    setIsAuth(false);
+    navigate('/login');
+  };
+
+  return (
+    <button onClick={handleLogout}>Cerrar Sesión</button>
+  );
+}
+```
+
+## Protected Routes
+
+Use authentication state to protect routes:
+
+```jsx src/App.jsx
+import { useAuth } from './context/AuthContext';
+import { Navigate } from 'react-router-dom';
+
+function App() {
+  const { isAuthenticated, role } = useAuth();
+
+  return (
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/login" element={<Login />} />
+      
+      {/* Admin-only route */}
+      <Route 
+        path="/admin" 
+        element={
+          isAuthenticated && role === 'admin' 
+            ? <Admin /> 
+            : <Navigate to="/login" />
+        } 
+      />
+    </Routes>
+  );
+}
+```
+
+## User Data Structure
+
+The authentication system expects a `data/users.json` file with this structure:
+
+```json
+[
+  {
+    "email": "admin@etca.com",
+    "password": "admin123",
+    "role": "admin"
+  },
+  {
+    "email": "cliente@example.com",
+    "password": "cliente123",
+    "role": "cliente"
+  }
+]
+```
+
+## Security Notes
+
+<Warning>
+  This implementation stores passwords in plain text and uses client-side validation only. This is suitable for demonstration purposes but **NOT for production use**. 
+  
+  For production:
+  - Implement server-side authentication
+  - Hash passwords with bcrypt or similar
+  - Use secure tokens (JWT)
+  - Implement proper session management
+  - Add HTTPS/TLS encryption
+</Warning>
+
+## Complete Implementation Example
+
+```jsx src/App.jsx
+import { useAuth } from './context/AuthContext';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import Login from './layout/Login';
+import Admin from './layout/Admin';
+import Home from './layout/Home';
+
+function App() {
+  const { isAuthenticated, role } = useAuth();
+
+  return (
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/login" element={<Login />} />
+      
+      <Route 
+        path="/admin" 
+        element={
+          isAuthenticated && role === 'admin' 
+            ? <Admin /> 
+            : <Navigate to="/login" />
+        } 
+      />
+    </Routes>
+  );
+}
+
+export default App;
+```
