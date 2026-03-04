@@ -1,0 +1,124 @@
+{
+  "projectType": "saas",
+  "projectName": "Tienda ETCA",
+  "projectDescription": "E-commerce platform for the Escuela de Tiro con Arco (Archery School) with shopping cart, product management, and admin panel.",
+  "theme": "almond",
+  "primaryColor": "#2E7D32",
+  "lightColor": "#66BB6A",
+  "darkColor": "#1B5E20",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "installation"
+            ]
+          },
+          {
+            "group": "User Guide",
+            "pages": [
+              "user-guide/browsing-products",
+              "user-guide/shopping-cart",
+              "user-guide/product-details",
+              "user-guide/contact"
+            ]
+          },
+          {
+            "group": "Features",
+            "pages": [
+              "features/authentication",
+              "features/notifications",
+              "features/search-filter",
+              "features/pagination"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Admin Guide",
+        "groups": [
+          {
+            "group": "Administration",
+            "pages": [
+              "admin/overview",
+              "admin/login",
+              "admin/product-management",
+              "admin/protected-routes"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Development",
+        "groups": [
+          {
+            "group": "Architecture",
+            "pages": [
+              "development/architecture",
+              "development/project-structure",
+              "development/technologies"
+            ]
+          },
+          {
+            "group": "Context API",
+            "pages": [
+              "development/context/cart-context",
+              "development/context/auth-context",
+              "development/context/admin-context"
+            ]
+          },
+          {
+            "group": "Components",
+            "pages": [
+              "development/components/overview",
+              "development/components/layout",
+              "development/components/forms"
+            ]
+          },
+          {
+            "group": "Deployment",
+            "pages": [
+              "development/deployment/setup",
+              "development/deployment/build",
+              "development/deployment/hosting"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Shopping cart with add/remove/update quantity",
+    "Product catalog with search and pagination",
+    "Admin panel for CRUD operations on products",
+    "Role-based authentication (admin/client)",
+    "Real-time notifications with React Toastify",
+    "Visual confirmations with SweetAlert2",
+    "Protected routes for admin access",
+    "Responsive design with Bootstrap"
+  ],
+  "publicApiSurface": [
+    "CartContext.handleAddToCart(product)",
+    "CartContext.eliminarProducto(product)",
+    "CartContext.borrarProducto(product)",
+    "CartContext.vaciarCarrito()",
+    "AuthContext.handleSubmit(e)",
+    "AuthContext.setEmail(email)",
+    "AuthContext.setPassword(password)",
+    "AdminContext.agregarProducto(producto)",
+    "AdminContext.actualizarProducto(producto)",
+    "AdminContext.eliminarProducto(id)",
+    "Route: /",
+    "Route: /productos",
+    "Route: /productos/:id",
+    "Route: /acercade",
+    "Route: /contacto",
+    "Route: /login",
+    "Route: /admin (protected)"
+  ]
+}
