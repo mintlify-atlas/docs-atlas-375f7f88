@@ -1,0 +1,123 @@
+---
+title: About us
+description: Learn about the Tienda ETCA team and mission
+---
+
+The **About Us** page (`/acercade`) provides information about the Tienda ETCA e-commerce platform, the team behind it, and how to get in touch.
+
+## Accessing the About Us page
+
+Navigate to the About Us page by:
+- Clicking **Acerca de** in the main navigation menu
+- Directly visiting `/acercade` in your browser
+
+## Page sections
+
+### Team showcase
+
+The page displays the team members behind Tienda ETCA with their roles and profile images:
+
+```jsx src/layout/AcercaDe.jsx:13-18
+const equipo = [
+  { nombre: 'Silvia', rol: 'Product Owner', imagen: 'https://i.pravatar.cc/150?img=21' },
+  { nombre: 'Luis', rol: 'Diseñador UX/UI', imagen: 'https://i.pravatar.cc/400?img=8' },
+  { nombre: 'Matías', rol: 'Desarrollador', imagen: 'https://placebeard.it/640/480' },
+  { nombre: 'Sabrina', rol: 'Desarrolladora', imagen: 'https://loremflickr.com/cache/resized/defaultImage.small_320_240_nofilter.jpg' },
+];
+```
+
+The team is rendered using the `Equipo` component, which displays each member in a responsive grid layout.
+
+### Welcome section
+
+A brief introduction explaining the platform's focus:
+- Offering excellent quality products
+- Customer satisfaction commitment
+- Simple, secure, and reliable shopping experience
+
+### Mission statement
+
+Describes the platform's core values:
+- Providing first-class products
+- Building lasting relationships based on trust and respect
+- Innovation and continuous improvement
+- Personalized attention
+
+### Contact information
+
+The About Us page includes direct contact details:
+- **Email**: contacto@tienda.com
+- **Phone**: +123 456 7890
+
+```jsx src/layout/AcercaDe.jsx:47-50
+<a href="mailto:contacto@tienda.com" className="text-primary fw-bold">contacto@tienda.com</a>
+&nbsp;or call&nbsp;
+<strong>+123 456 7890</strong>.
+```
+
+### Featured image
+
+The page displays a featured image (ETCA pins) with responsive styling:
+
+```jsx src/layout/AcercaDe.jsx:54-61
+<img
+  src={foto}
+  alt="Pines ETCA"
+  className="img-fluid rounded shadow"
+  style={{ maxWidth: '500px' }}
+/>
+```
+
+## Component structure
+
+The About Us page is built with the standard layout components:
+
+<CardGroup cols={3}>
+  <Card title="Header" icon="bars">
+    Navigation menu with cart access
+  </Card>
+  <Card title="Main content" icon="file-lines">
+    Team, mission, and contact sections
+  </Card>
+  <Card title="Footer" icon="arrow-down">
+    Footer with additional links
+  </Card>
+</CardGroup>
+
+## Cart accessibility
+
+The shopping cart remains accessible from the About Us page through:
+- The cart button in the header
+- The cart drawer overlay
+
+```jsx src/layout/AcercaDe.jsx:64
+<Cart isOpen={isCartOpen} onClose={() => setCartOpen(false)} />
+```
+
+## Integration with context
+
+The page uses `CartContext` to manage cart visibility state:
+
+```jsx src/layout/AcercaDe.jsx:11
+const { isCartOpen, setCartOpen } = useContext(CartContext);
+```
+
+This ensures the cart state is synchronized across all pages.
+
+## Responsive design
+
+The About Us page uses Bootstrap classes for responsive layout:
+- Container with padding: `container py-5`
+- Responsive image: `img-fluid`
+- Text alignment adjusts for different screen sizes
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="Contact form" icon="envelope" href="/user-guide/contact">
+    Learn how to send messages through the contact form
+  </Card>
+  <Card title="Browse products" icon="store" href="/user-guide/browsing-products">
+    Explore the product catalog
+  </Card>
+</CardGroup>
